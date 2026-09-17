@@ -33,13 +33,96 @@ export class WebsiteDiscoveryProvider implements DigitalDiscoveryProvider {
 // MOCK ADAPTERS (as requested in rule 36: DO NOT FAKE EXTERNAL DATA)
 // These explicitly return test evidence based on input for Phase 3 architecture verification.
 
-export class MockSearchDiscoveryProvider implements DigitalDiscoveryProvider {
+export class SerperSearchDiscoveryProvider implements DigitalDiscoveryProvider {
   sourceType: EvidenceSource["sourceType"] = "SEARCH";
   
   async discover(identity: BusinessIdentity): Promise<Evidence[]> {
-    // REAL IMPLEMENTATION PENDING: Attach Google Custom Search / Serper API here.
-    // RULE: DO NOT FABRICATE DATA.
-    return [];
+    const apiKey = process.env.SERPER_API_KEY;
+    if (!apiKey) {
+      console.warn("SERPER_API_KEY is missing. Search discovery disabled.");
+      return [];
+    }
+
+    const query = `${identity.primaryName} ${identity.location}`;
+    try {
+      const response = await fetch("https://google.serper.dev/search", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ q: query, gl: "us" }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Serper API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const evidence: Evidence[] = [];
+
+      // 1. Check if they have a knowledge graph panel
+      if (data.knowledgeGraph) {
+        evidence.push({
+          id: `search-kg-${Date.now()}`,
+          sourceType: "SEARCH",
+          sourceUrl: data.knowledgeGraph.website || "google.com",
+          sourceName: "Google Knowledge Graph",
+          evidenceType: "VERIFIED_ENTITY",
+          observedValue: data.knowledgeGraph.title || identity.primaryName,
+          confidence: "VERIFIED",
+          collectedAt: new Date(),
+        });
+      }
+
+      // 2. Check their organic ranking for their own brand name
+      if (data.organic && data.organic.length > 0) {
+        const topResult = data.organic[0];
+        const isFirst = topResult.title.toLowerCase().includes(identity.primaryName.toLowerCase()) || 
+                       (identity.website && topResult.link.includes(new URL(identity.website).hostname.replace('www.', '')));
+        
+        if (isFirst) {
+          evidence.push({
+            id: `search-org-${Date.now()}`,
+            sourceType: "SEARCH",
+            sourceUrl: topResult.link,
+            sourceName: "Google Organic Search",
+            evidenceType: "BRAND_DOMINANCE",
+            observedValue: "Ranks #1 for brand query",
+            confidence: "VERIFIED",
+            collectedAt: new Date(),
+          });
+        }
+      }
+
+      // 3. Extract competitor or generic directory mentions
+      const directories = data.organic?.filter((res: any) => 
+        res.link.includes("yelp.com") || 
+        res.link.includes("bbb.org") || 
+        res.link.includes("angi.com") ||
+        res.link.includes("tripadvisor.com")
+      );
+
+      if (directories && directories.length > 0) {
+        directories.forEach((dir: any, index: number) => {
+          evidence.push({
+            id: `search-dir-${Date.now()}-${index}`,
+            sourceType: "SEARCH",
+            sourceUrl: dir.link,
+            sourceName: new URL(dir.link).hostname.replace('www.', ''),
+            evidenceType: "THIRD_PARTY_MENTION",
+            observedValue: dir.title,
+            confidence: "OBSERVED",
+            collectedAt: new Date(),
+          });
+        });
+      }
+
+      return evidence;
+    } catch (err) {
+      console.error("Failed to execute Serper discovery:", err);
+      return [];
+    }
   }
 }
 

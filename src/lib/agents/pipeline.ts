@@ -12,7 +12,7 @@ import { runIntelligenceSynthesisAgent } from "./synthesis-agent";
 import { BusinessIdentityAgent } from "./modules/BusinessIdentityAgent";
 import { 
   WebsiteDiscoveryProvider, 
-  MockSearchDiscoveryProvider, 
+  SerperSearchDiscoveryProvider, 
   MockLocalDiscoveryProvider, 
   MockSocialDiscoveryProvider 
 } from "../discovery/providers";
@@ -31,7 +31,7 @@ export async function runModularIntelligencePipeline(
   // Run all discovery modules in parallel
   const discoveryProviders = [
     new WebsiteDiscoveryProvider(),
-    new MockSearchDiscoveryProvider(),
+    new SerperSearchDiscoveryProvider(),
     new MockLocalDiscoveryProvider(),
     new MockSocialDiscoveryProvider(),
   ];
