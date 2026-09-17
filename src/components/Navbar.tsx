@@ -41,17 +41,17 @@ export default function Navbar() {
 
         {/* Links */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-300">
+          <Link href="/#audit-form" className="hover:text-white transition-colors">
+            Scan
+          </Link>
           <Link href="/#how-it-works" className="hover:text-white transition-colors">
             How It Works
           </Link>
           <Link href="/#what-we-analyze" className="hover:text-white transition-colors">
-            What We Analyze
+            Intelligence
           </Link>
           <Link href="/#pricing" className="hover:text-white transition-colors">
             Pricing
-          </Link>
-          <Link href="/services/roofing" className="hover:text-white transition-colors">
-            Industries
           </Link>
         </nav>
 

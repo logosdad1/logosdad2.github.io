@@ -10,11 +10,12 @@ interface AuditFormProps {
 }
 
 const PROGRESS_STEPS = [
-  "Connecting to server & verifying SSL certificate...",
-  "Parsing HTML structure, meta tags & JSON-LD schemas...",
-  "Auditing machine legibility & AI recommendation signals...",
-  "Evaluating local citations, trust badges & conversion friction...",
-  "Compiling Business Visibility Score & executive report...",
+  "IDENTIFYING YOUR BUSINESS",
+  "DISCOVERING YOUR DIGITAL PRESENCE",
+  "CHECKING PUBLIC SIGNALS",
+  "ANALYZING CUSTOMER INTENT",
+  "CONNECTING THE EVIDENCE",
+  "BUILDING YOUR VISIBILITY REPORT",
 ];
 
 export default function AuditForm({ defaultIndustry = "Roofing", className = "" }: AuditFormProps) {
@@ -121,7 +122,7 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
             </div>
 
             <p className="text-xs text-zinc-500 pt-2">
-              Running multi-agent analysis. This takes approximately 8–12 seconds.
+              Running multi-agent investigation. This takes approximately 8–12 seconds.
             </p>
           </div>
         ) : (
@@ -132,7 +133,7 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
                 Instant Business Scan
               </div>
               <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                Audit Your Business Visibility
+                Investigate Your Business Visibility
               </h3>
               <p className="text-sm sm:text-base text-zinc-400 max-w-2xl">
                 Enter your business details and we&apos;ll show you how easy your business is to find, understand, trust, and choose.

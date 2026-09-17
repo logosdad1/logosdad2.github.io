@@ -110,8 +110,13 @@ export default function HomePage() {
           })}
         </div>
 
-        <div className="max-w-2xl mx-auto text-center p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300 leading-relaxed">
-          &ldquo;If someone asks an AI system: <span className="text-teal-300 italic font-mono">&apos;Who is the best roofing contractor in my city?&apos;</span> — will the AI have enough structured evidence to mention you, or will it recommend your competitor?&rdquo;
+        <div className="max-w-3xl mx-auto text-center p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300 leading-relaxed space-y-4">
+          <p>
+            &ldquo;If someone asks an AI system to find a roofing contractor in your city, does your digital presence give that system enough clear, consistent evidence to understand who you are, what you do and where you operate?&rdquo;
+          </p>
+          <p className="text-zinc-400">
+            AI systems are only one part of the modern discovery journey. Customers may encounter a business through: <strong className="text-teal-400 font-mono">SEARCH, MAPS, SOCIAL, REVIEWS, WEBSITES, CONTENT, AI-POWERED DISCOVERY</strong>. Omnisight connects these signals.
+          </p>
         </div>
       </section>
 
@@ -124,18 +129,15 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
             How It Works
           </h2>
-          <p className="text-xs text-zinc-400">
-            From raw domain scan to prioritized remediation in 5 clean steps.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 max-w-6xl mx-auto">
           {[
-            { step: "01", title: "Enter Your Business", desc: "Submit your business name, domain, industry, and location." },
-            { step: "02", title: "Get Your Free Score", desc: "Instantly view your 0–100 Business Visibility Score." },
-            { step: "03", title: "Discover What's Missing", desc: "Understand why AI models or search bots struggle with your entity." },
-            { step: "04", title: "Unlock Complete Report", desc: "Gain full access to the multi-agent diagnostic for $10." },
-            { step: "05", title: "Fix Highest-Impact Problems", desc: "Execute the prioritized action plan (Fix Now / Fix Next / Later)." },
+            { step: "01", title: "Tell Us About Your Business", desc: "Enter your business name, website if you have one, industry and location." },
+            { step: "02", title: "We Investigate Your Digital Presence", desc: "We look for the public signals that help customers and discovery systems understand your business." },
+            { step: "03", title: "We Connect The Evidence", desc: "We compare your website, search presence, local signals, content, reputation and other available evidence." },
+            { step: "04", title: "Understand How Customers May Find You", desc: "See where your business is clear, where important questions are unanswered, and where visibility or trust may break down." },
+            { step: "05", title: "Get Your Priority Roadmap", desc: "Know what to fix first, what can wait, and where professional help may create the most impact." },
           ].map((item, idx) => (
             <div
               key={idx}
@@ -167,39 +169,39 @@ export default function HomePage() {
           {[
             {
               icon: Layers,
-              title: "Website Clarity",
+              title: "Business & Website Clarity",
               weight: "20%",
-              desc: "Homepage value proposition, H1 hierarchy, mobile navigation clarity, and immediate service comprehension.",
+              desc: "Business identity, service positioning, location clarity, website clarity, service clarity, cross-platform consistency, and brand/business description consistency.",
             },
             {
               icon: Zap,
               title: "AI Visibility & Discoverability",
               weight: "20%",
-              desc: "JSON-LD schema entities, machine-readable services, entity disambiguation, and AI answer readiness.",
+              desc: "Entity clarity, machine-readable information, structured data, service clarity, location clarity, public business information, answer readiness, content coverage, cross-platform consistency, and discoverability signals.",
             },
             {
               icon: Search,
               title: "Search & Local Presence",
               weight: "15%",
-              desc: "NAP consistency (Name, Address, Phone), geographic coverage indicators, SSL encryption, and local signals.",
+              desc: "Search discoverability where measurable, local presence, business information consistency, service areas, local signals, directories, and map/local evidence where available.",
             },
             {
               icon: TrendingUp,
               title: "Content & Authority",
               weight: "15%",
-              desc: "Topical depth, dedicated service pages, case study proof, and structured answering of customer questions.",
+              desc: "Service pages, customer questions, FAQs, educational content, case studies, project examples, topical depth, expertise signals, and content gaps.",
             },
             {
               icon: ShieldCheck,
-              title: "Trust & Credibility",
+              title: "Trust & Reputation",
               weight: "15%",
-              desc: "Verified customer testimonials, licenses, certifications, privacy disclosures, and social footprint.",
+              desc: "Reviews where verified, testimonials, public reputation signals, proof, certifications where verified, licenses where publicly verifiable, case studies, and social proof.",
             },
             {
               icon: Users,
-              title: "Conversion Readiness",
+              title: "Customer Conversion",
               weight: "15%",
-              desc: "Frictionless contact discovery, click-to-call, WhatsApp integration, and clear quote request forms.",
+              desc: "Phone, WhatsApp, contact, forms, quote requests, CTAs, trust near CTAs, booking, friction, and next-step clarity.",
             },
           ].map((cat, idx) => {
             const Icon = cat.icon;
@@ -256,7 +258,7 @@ export default function HomePage() {
             </div>
             <div className="p-3.5 rounded-lg bg-amber-950/20 border border-amber-900/30 text-xs">
               <span className="text-amber-400 font-bold block mb-1">⚠ Needs Attention</span>
-              <p className="text-zinc-300">AI cannot reliably determine your service areas outside city center.</p>
+              <p className="text-zinc-300">Your public business information does not clearly define the full service area. Customers and discovery systems may have less evidence for determining whether you serve locations outside the primary city.</p>
             </div>
             <div className="p-3.5 rounded-lg bg-rose-950/20 border border-rose-900/30 text-xs">
               <span className="text-rose-400 font-bold block mb-1">✕ Biggest Opportunity</span>
@@ -268,24 +270,12 @@ export default function HomePage() {
 
       {/* TRANSPARENT PRICING SECTION */}
       <section id="pricing" className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800/80 pt-16">
-        <div className="max-w-3xl mx-auto text-center space-y-3 mb-12">
-          <div className="text-xs font-mono uppercase tracking-wider text-teal-400">
-            Transparent Pricing
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Simple, Accessible Intelligence
-          </h2>
-          <p className="text-xs text-zinc-400">
-            Start completely free. Unlock in-depth diagnostics when you want actionable fixes.
-          </p>
-        </div>
-
         <div className="max-w-4xl mx-auto">
           <IntelligenceDepthSlider
             currentTier="SNAPSHOT"
             initialSelectedTier="GROWTH"
             showActionButton={true}
-            actionButtonLabel="Start Free Audit"
+            actionButtonLabel="Start Free Investigation"
             onSelectTier={() => {
               if (typeof window !== "undefined") {
                 window.location.href = "#audit-form";

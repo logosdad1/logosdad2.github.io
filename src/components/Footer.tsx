@@ -12,7 +12,7 @@ export default function Footer() {
               <span>Omnisight AI</span>
             </div>
             <p className="text-slate-400 leading-relaxed text-xs">
-              AI-powered business visibility and website intelligence. Understand how search engines and generative models see, trust, and recommend your business.
+              AI-powered Business Visibility Intelligence. Understand how customers, search systems and AI-powered discovery may interpret your business — and know what to improve next.
             </p>
           </div>
 
@@ -46,23 +46,23 @@ export default function Footer() {
             <div className="font-semibold text-slate-200 mb-3">Platform</div>
             <ul className="space-y-2">
               <li>
-                <Link href="/#what-we-analyze" className="hover:text-slate-200 transition-colors">
-                  AI Visibility Audit
+                <Link href="/#audit-form" className="hover:text-slate-200 transition-colors">
+                  Scan Your Business
+                </Link>
+              </li>
+              <li>
+                <Link href="/#how-it-works" className="hover:text-slate-200 transition-colors">
+                  How It Works
                 </Link>
               </li>
               <li>
                 <Link href="/#what-we-analyze" className="hover:text-slate-200 transition-colors">
-                  Schema Generator
+                  Intelligence Overview
                 </Link>
               </li>
               <li>
                 <Link href="/#pricing" className="hover:text-slate-200 transition-colors">
-                  Transparent Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="hover:text-slate-200 transition-colors">
-                  Admin Portal
+                  Pricing
                 </Link>
               </li>
             </ul>
