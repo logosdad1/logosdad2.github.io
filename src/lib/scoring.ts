@@ -11,23 +11,26 @@ export function calculateOverallScore(
   },
   weights: SystemSettings["scoreWeights"]
 ): number {
-  const totalWeight =
-    (weights.websiteClarity || 20) +
-    (weights.aiVisibility || 20) +
-    (weights.searchLocal || 15) +
-    (weights.contentAuthority || 15) +
-    (weights.trustCredibility || 15) +
-    (weights.conversionReadiness || 15);
+  let totalWeight = 0;
+  let weightedSum = 0;
 
-  const weightedSum =
-    categories.websiteClarity.score * (weights.websiteClarity || 20) +
-    categories.aiVisibility.score * (weights.aiVisibility || 20) +
-    categories.searchLocal.score * (weights.searchLocal || 15) +
-    categories.contentAuthority.score * (weights.contentAuthority || 15) +
-    categories.trustCredibility.score * (weights.trustCredibility || 15) +
-    categories.conversionReadiness.score * (weights.conversionReadiness || 15);
+  const processCategory = (cat: CategoryScore, weight: number) => {
+    if (cat.status !== "insufficient") {
+      totalWeight += weight;
+      weightedSum += cat.score * weight;
+    }
+  };
 
-  return Math.round(weightedSum / (totalWeight || 100));
+  processCategory(categories.websiteClarity, weights.websiteClarity || 20);
+  processCategory(categories.aiVisibility, weights.aiVisibility || 20);
+  processCategory(categories.searchLocal, weights.searchLocal || 15);
+  processCategory(categories.contentAuthority, weights.contentAuthority || 15);
+  processCategory(categories.trustCredibility, weights.trustCredibility || 15);
+  processCategory(categories.conversionReadiness, weights.conversionReadiness || 15);
+
+  if (totalWeight === 0) return 0; // Fallback if everything is insufficient
+
+  return Math.round(weightedSum / totalWeight);
 }
 
 export function getScoreBadge(score: number): {

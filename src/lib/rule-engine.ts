@@ -464,7 +464,7 @@ export function evaluateDeterministicRules(
   const customerIntentAnalysis: CustomerIntentItem[] = [
     {
       buyerQuestion: `How much do typical ${industry} services cost in ${location}?`,
-      intentType: "Commercial Investigation",
+      intentType: "Evaluate",
       yourSiteStatus: hasPricingContent ? "Partially Covered" : "Completely Missing",
       recommendation: hasPricingContent
         ? "Structure your pricing terms into an explicit comparison table or starting price guide."
@@ -472,25 +472,25 @@ export function evaluateDeterministicRules(
     },
     {
       buyerQuestion: `What specific ${industry} specializations do you handle?`,
-      intentType: "Transactional (High Urgency)",
+      intentType: "Discover",
       yourSiteStatus: crawl.headings.h2.length >= 3 ? "Explicitly Answered" : "Partially Covered",
       recommendation: "Ensure each distinct service has its own dedicated H2 section with process descriptions.",
     },
     {
       buyerQuestion: `How quickly can ${name} deploy or respond in ${location}?`,
-      intentType: "Transactional (High Urgency)",
+      intentType: "Act/Buy",
       yourSiteStatus: hasSpeedContent ? "Explicitly Answered" : "Completely Missing",
       recommendation: "Clearly state your response window (e.g. 24-hour emergency response or same-week consultations).",
     },
     {
       buyerQuestion: `Are you licensed, insured, and verified to operate in ${location}?`,
-      intentType: "Navigational / Credibility",
+      intentType: "Trust",
       yourSiteStatus: crawl.trustSignals.hasCertifications ? "Explicitly Answered" : "Partially Covered",
       recommendation: "Display your active contractor/business license number and insurance verification badge in the footer.",
     },
     {
-      buyerQuestion: `What do real past clients in ${location} say about your work?`,
-      intentType: "Commercial Investigation",
+      buyerQuestion: `What do real past clients in ${location} say about your work compared to others?`,
+      intentType: "Compare",
       yourSiteStatus: crawl.trustSignals.hasTestimonials ? "Explicitly Answered" : "Completely Missing",
       recommendation: "Embed 3+ verified client quotes with local project photos to satisfy AI credibility checks.",
     },

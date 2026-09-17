@@ -93,7 +93,7 @@ export async function runAIVisibilityAgent(context: AgentContext): Promise<Agent
   
   if (!hasWebsite) {
     return {
-      score: 0, weight: 20, status: "critical",
+      score: 0, weight: 20, status: "insufficient",
       explanation: "Evaluates how clearly AI recommendation models and generative search engines can interpret your entity.",
       strengths: [],
       weaknesses: ["No website available to feed AI models structured data."],
@@ -157,7 +157,7 @@ export async function runLocalPresenceAgent(context: AgentContext): Promise<Agen
 
   if (!hasWebsite && localEvidence.length === 0) {
     return {
-      score: 0, weight: 15, status: "critical",
+      score: 0, weight: 15, status: "insufficient",
       explanation: "Assesses your local search footprint, NAP consistency, and geographic signals.",
       strengths: [], weaknesses: ["Missing owned digital properties for local SEO."],
       evidence: [], recommendations: [], findings: []
@@ -226,7 +226,7 @@ export async function runContentAuthorityAgent(context: AgentContext): Promise<A
   
   if (!hasWebsite) {
     return {
-      score: 0, weight: 15, status: "critical",
+      score: 0, weight: 15, status: "insufficient",
       explanation: "Measures depth of information, service breakdown, and topical relevance.",
       strengths: [], weaknesses: ["No content available for analysis."],
       evidence: [], recommendations: [], findings: []
@@ -275,9 +275,9 @@ export async function runTrustReputationAgent(context: AgentContext): Promise<Ag
   
   if (!hasWebsite) {
     return {
-      score: 0, weight: 15, status: "critical",
+      score: 0, weight: 15, status: "insufficient",
       explanation: "Audits verifiable trust signals, customer reviews, and industry social proof.",
-      strengths: [], weaknesses: ["Cannot verify trust signals without a central digital property."],
+      strengths: [], weaknesses: ["Cannot verify trust signals without a central digital property or integrated APIs."],
       evidence: [], recommendations: [], findings: []
     };
   }
@@ -325,7 +325,7 @@ export async function runConversionAgent(context: AgentContext): Promise<AgentCa
   
   if (!hasWebsite) {
     return {
-      score: 0, weight: 15, status: "critical",
+      score: 0, weight: 15, status: "insufficient",
       explanation: "Analyzes how easily a prospect can initiate contact or become a paying customer.",
       strengths: [], weaknesses: ["No conversion mechanisms found without a website."],
       evidence: [], recommendations: [], findings: []

@@ -159,8 +159,14 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                     <p className="text-xs text-slate-400">{cc.data.explanation}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-bold text-white">{cc.data.score}</span>
-                    <span className="text-xs text-slate-500 font-mono">/100</span>
+                    {cc.data.status === "insufficient" ? (
+                      <span className="text-sm font-bold text-slate-500">N/A</span>
+                    ) : (
+                      <>
+                        <span className="text-2xl font-bold text-white">{cc.data.score}</span>
+                        <span className="text-xs text-slate-500 font-mono">/100</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -172,11 +178,19 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                         <div key={i} className="p-5 rounded-xl bg-slate-900/50 border border-slate-800 space-y-3">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-bold text-white">{finding.title}</h4>
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                              finding.priority === "HIGH" ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : 
-                              finding.priority === "MEDIUM" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : 
-                              "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                            }`}>{finding.priority} PRIORITY</span>
+                            <div className="flex gap-2">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                finding.confidence === "VERIFIED" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                                finding.confidence === "INSUFFICIENT_DATA" ? "bg-slate-500/10 text-slate-400 border border-slate-500/20" :
+                                finding.confidence === "NOT_CONFIRMED" ? "bg-slate-500/10 text-slate-400 border border-slate-500/20" :
+                                "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                              }`}>{finding.confidence}</span>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                finding.priority === "HIGH" ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : 
+                                finding.priority === "MEDIUM" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : 
+                                "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                              }`}>{finding.priority} PRIORITY</span>
+                            </div>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1">

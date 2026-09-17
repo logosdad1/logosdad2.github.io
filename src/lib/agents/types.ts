@@ -17,7 +17,7 @@ export interface Evidence {
   sourceName: string;
   evidenceType: string; // e.g. "NAME_CONSISTENCY", "PHONE_NUMBER", "RANKING"
   observedValue: string;
-  confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED";
+  confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED" | "NOT_CONFIRMED" | "INSUFFICIENT_DATA";
   collectedAt: Date;
 }
 
@@ -55,7 +55,7 @@ export interface Finding {
   recommendedAction: string;
   priority: "HIGH" | "MEDIUM" | "LOW";
   source: string;
-  confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED";
+  confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED" | "NOT_CONFIRMED" | "INSUFFICIENT_DATA";
   evidenceIds?: string[];
 }
 
@@ -69,7 +69,7 @@ export interface AgentContext {
 
 export interface BaseAgentResult {
   score: number; // 0-100
-  status: "critical" | "warning" | "good" | "excellent";
+  status: "critical" | "warning" | "good" | "excellent" | "insufficient";
   explanation: string;
   strengths: string[];
   weaknesses: string[];

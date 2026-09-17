@@ -53,13 +53,13 @@ export interface Finding {
   recommendedAction: string;
   priority: "HIGH" | "MEDIUM" | "LOW";
   source: string;
-  confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED";
+  confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED" | "NOT_CONFIRMED" | "INSUFFICIENT_DATA";
 }
 
 export interface CategoryScore {
   score: number; // 0 - 100
   weight: number; // percentage (e.g. 20)
-  status: "critical" | "warning" | "good" | "excellent";
+  status: "critical" | "warning" | "good" | "excellent" | "insufficient";
   explanation: string;
   strengths: string[];
   weaknesses: string[];

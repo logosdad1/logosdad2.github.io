@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     const targetTier: IntelligenceTier = tier || "GROWTH";
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin || "https://ordigit.com";
 
     const { checkoutUrl, isMock, finalPrice, isUpgrade } = await createCheckoutSession(
       auditId,

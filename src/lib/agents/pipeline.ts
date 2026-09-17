@@ -9,7 +9,7 @@ import {
   runConversionAgent
 } from "./intelligence-agents";
 import { runIntelligenceSynthesisAgent } from "./synthesis-agent";
-import { IdentityResolutionEngine } from "../discovery/identity";
+import { BusinessIdentityAgent } from "./modules/BusinessIdentityAgent";
 import { 
   WebsiteDiscoveryProvider, 
   MockSearchDiscoveryProvider, 
@@ -25,7 +25,7 @@ export async function runModularIntelligencePipeline(
   const hasWebsite = !!crawl.url && crawl.statusCode > 0 && crawl.statusCode < 400;
 
   // PHASE 3C: Business Identity Layer
-  const identity = IdentityResolutionEngine.resolve(input);
+  const identity = await BusinessIdentityAgent.resolve(input);
 
   // PHASE 3D-F: Digital Discovery Framework
   // Run all discovery modules in parallel

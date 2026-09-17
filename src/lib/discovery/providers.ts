@@ -37,22 +37,9 @@ export class MockSearchDiscoveryProvider implements DigitalDiscoveryProvider {
   sourceType: EvidenceSource["sourceType"] = "SEARCH";
   
   async discover(identity: BusinessIdentity): Promise<Evidence[]> {
-    const evidences: Evidence[] = [];
-    const query = `${identity.industry} in ${identity.location}`.toLowerCase();
-    
-    // Simulate finding the business in search results
-    evidences.push({
-      id: `search-${Date.now()}-1`,
-      sourceType: "SEARCH",
-      sourceUrl: "https://google.com/search?q=" + encodeURIComponent(query),
-      sourceName: "Google Search (Mock)",
-      evidenceType: "DISCOVERY_QUERY_VISIBILITY",
-      observedValue: "Business appeared in local pack for generic query",
-      confidence: "OBSERVED",
-      collectedAt: new Date(),
-    });
-
-    return evidences;
+    // REAL IMPLEMENTATION PENDING: Attach Google Custom Search / Serper API here.
+    // RULE: DO NOT FABRICATE DATA.
+    return [];
   }
 }
 
@@ -60,21 +47,9 @@ export class MockLocalDiscoveryProvider implements DigitalDiscoveryProvider {
   sourceType: EvidenceSource["sourceType"] = "LOCAL";
   
   async discover(identity: BusinessIdentity): Promise<Evidence[]> {
-    const evidences: Evidence[] = [];
-    
-    // Simulate finding a Google Business Profile
-    evidences.push({
-      id: `local-${Date.now()}-1`,
-      sourceType: "LOCAL",
-      sourceUrl: "https://maps.google.com/?q=" + encodeURIComponent(identity.name),
-      sourceName: "Google Business Profile (Mock)",
-      evidenceType: "NAME_CONSISTENCY",
-      observedValue: identity.name,
-      confidence: "VERIFIED",
-      collectedAt: new Date(),
-    });
-
-    return evidences;
+    // REAL IMPLEMENTATION PENDING: Attach Google Places API here.
+    // RULE: DO NOT FABRICATE DATA.
+    return [];
   }
 }
 
@@ -82,22 +57,8 @@ export class MockSocialDiscoveryProvider implements DigitalDiscoveryProvider {
   sourceType: EvidenceSource["sourceType"] = "SOCIAL";
   
   async discover(identity: BusinessIdentity): Promise<Evidence[]> {
-    const evidences: Evidence[] = [];
-    
-    // Simulate discovering a Facebook page
-    if (identity.name.toLowerCase().includes("roof")) {
-      evidences.push({
-        id: `social-${Date.now()}-1`,
-        sourceType: "SOCIAL",
-        sourceUrl: "https://facebook.com/mock-profile",
-        sourceName: "Facebook (Mock)",
-        evidenceType: "POSITIONING_CONSISTENCY",
-        observedValue: "General Construction Company", // Conflict with "Roofing"
-        confidence: "OBSERVED",
-        collectedAt: new Date(),
-      });
-    }
-
-    return evidences;
+    // REAL IMPLEMENTATION PENDING: Attach Social Graph / Scraping API here.
+    // RULE: DO NOT FABRICATE DATA.
+    return [];
   }
 }
