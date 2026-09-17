@@ -87,7 +87,7 @@ export interface CompetitorGap {
 
 export interface CustomerIntentItem {
   buyerQuestion: string;
-  intentType: "Commercial Investigation" | "Transactional (High Urgency)" | "Navigational / Credibility";
+  intentType: "Discover" | "Evaluate" | "Compare" | "Trust" | "Act/Buy";
   yourSiteStatus: "Explicitly Answered" | "Partially Covered" | "Completely Missing";
   recommendation: string;
 }
