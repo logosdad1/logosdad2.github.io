@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         String     @default("USER") // USER or ADMIN
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  businesses   Business[]
+  audits       Audit[]
+}
+
+model Business {
+  id         String   @id @default(cuid())
+  userId     String?
+  name       String
+  websiteUrl String
+  industry   String
+  location   String
+  country    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audits     Audit[]
+}
+
+model Audit {
+  id           String            @id @default(cuid())
+  businessId   String?
+  userId       String?
+  url          String
+  businessName String
+  industry     String
+  location     String
+  overallScore Int
+  tier         String            @default("SNAPSHOT") // SNAPSHOT, ESSENTIAL, GROWTH, AUTHORITY
+  tierPrice    Float             @default(0)
+  isPaid       Boolean           @default(false)
+  paidAt       DateTime?
+  unlockToken  String            @unique @default(cuid())
+  status       String            @default("COMPLETED") // PENDING, PROCESSING, COMPLETED, FAILED
+  errorMessage String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  business     Business?         @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  user         User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  score        AuditScore?
+  reportData   AuditReportData?
+  payments     Payment[]
+  leads        AgencyLead[]
+}
+
+model AuditScore {
+  id                  String   @id @default(cuid())
+  auditId             String   @unique
+  websiteClarity      Int
+  aiVisibility        Int
+  searchLocal         Int
+  contentAuthority    Int
+  trustCredibility    Int
+  conversionReadiness Int
+  audit               Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+}
+
+model AuditReportData {
+  id        String   @id @default(cuid())
+  auditId   String   @unique
+  fullJson  String   // JSON string storing full multi-agent findings, executive summary, action plan, schema code
+  audit     Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  auditId        String
+  tier           String   @default("ESSENTIAL") // ESSENTIAL, GROWTH, AUTHORITY
+  amount         Float
+  currency       String   @default("USD")
+  status         String   // PENDING, SUCCEEDED, FAILED
+  provider       String   @default("stripe") // stripe, mock
+  transactionRef String?
+  createdAt      DateTime @default(now())
+  audit          Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+}
+
+model SystemConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model AgencyLead {
+  id        String   @id @default(cuid())
+  auditId   String?
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  service   String?
+  message   String?
+  status    String   @default("NEW") // NEW, CONTACTED, CLOSED
+  createdAt DateTime @default(now())
+  audit     Audit?   @relation(fields: [auditId], references: [id], onDelete: SetNull)
+}
