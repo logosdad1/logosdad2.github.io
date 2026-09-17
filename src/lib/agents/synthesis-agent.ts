@@ -114,47 +114,6 @@ export async function runIntelligenceSynthesisAgent(
   transactionScore = Math.min(100, Math.max(10, transactionScore));
   trustScore = Math.min(100, Math.max(10, trustScore));
 
-  reportPayload.customerIntentAnalysis = {
-    overview: `Your digital ecosystem currently supports bottom-of-funnel transactions but lacks early-stage discovery and comparison coverage.`,
-    stages: [
-      {
-        stage: "Discovery Intent",
-        score: discoveryScore,
-        description: "Customers searching for who offers your services.",
-        gap: "Limited visibility in generic non-branded searches.",
-        action: "Create dedicated service-area pages."
-      },
-      {
-        stage: "Evaluation Intent",
-        score: evaluationScore,
-        description: "Customers verifying what you do.",
-        gap: context.hasWebsite ? "Content lacks deep service specifications." : "No central hub to explain services.",
-        action: "Expand service descriptions with specific outcomes."
-      },
-      {
-        stage: "Comparison Intent",
-        score: comparisonScore,
-        description: "Customers deciding between you and competitors.",
-        gap: "Missing pricing explanations or competitive differentiators.",
-        action: "Add 'Why Choose Us' and 'Process' sections."
-      },
-      {
-        stage: "Transaction Intent",
-        score: transactionScore,
-        description: "Customers ready to request a quote or buy.",
-        gap: transactionScore < 60 ? "Contact options are hidden or involve friction." : "None major detected.",
-        action: transactionScore < 60 ? "Add sticky prominent contact forms." : "Optimize form conversion rate."
-      },
-      {
-        stage: "Trust Intent",
-        score: trustScore,
-        description: "Customers looking for social proof before committing.",
-        gap: trustScore < 50 ? "Insufficient first-party reviews visible." : "None major detected.",
-        action: trustScore < 50 ? "Embed verified client testimonials on the homepage." : "Gather video testimonials."
-      }
-    ]
-  };
-
   // PHASE 3L: Service Opportunity Engine
   // Map high priority findings to actionable services
   const serviceOpportunities: any[] = [];
