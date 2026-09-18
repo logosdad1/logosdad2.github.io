@@ -19,41 +19,31 @@ export async function runIntelligenceSynthesisAgent(
   // such as queryCoverageAnalysis, strategicRoadmap, etc.
   const baseline = evaluateDeterministicRules(input, crawl);
 
+  const allFindings = [
+    ...categories.websiteClarity.findings,
+    ...categories.aiVisibility.findings,
+    ...categories.searchLocal.findings,
+    ...categories.contentAuthority.findings,
+    ...categories.trustCredibility.findings,
+    ...categories.conversionReadiness.findings
+  ];
+
+  // Pick top high-priority findings for the executive summary
+  const keyFindings = allFindings
+    .filter(f => f.type === "WEAKNESS" || f.type === "OPPORTUNITY")
+    .sort((a, b) => (a.priority === "HIGH" ? -1 : 1))
+    .slice(0, 6); // Max 6 key insights
+
   let executiveSummary = {
     currentVisibility: hasWebsite 
       ? `Your digital footprint currently has noticeable gaps that limit how clearly prospective customers and AI retrieval engines understand your business offerings.`
       : `You currently lack a foundational digital presence (like a website), making it extremely difficult for customers and AI systems to discover and trust your business.`,
-    topStrengths: categories.websiteClarity.strengths
-      .concat(categories.aiVisibility.strengths)
-      .slice(0, 3),
-    topProblems: categories.aiVisibility.weaknesses
-      .concat(categories.websiteClarity.weaknesses)
-      .concat(categories.conversionReadiness.weaknesses)
-      .slice(0, 5),
-    topOpportunities: categories.aiVisibility.recommendations
-      .concat(categories.contentAuthority.recommendations)
-      .concat(categories.trustCredibility.recommendations)
-      .slice(0, 5),
     visibilityStatement: hasWebsite
       ? `Your digital presence has opportunities that may be limiting how clearly customers and AI systems understand your business.`
       : `Your business lacks a primary digital hub. Building a website is your most urgent priority.`,
+    keyFindings
   };
 
-  if (!hasWebsite) {
-    executiveSummary.topStrengths = [
-      `Active business identified in ${input.location}`,
-      `Industry verified: ${input.industry}`
-    ];
-  } else if (categories.websiteClarity.strengths.length === 0) {
-    executiveSummary.topStrengths = [
-      `Accessible website responding with HTTP ${crawl.statusCode}`,
-      crawl.isSsl ? "Secure SSL encryption active" : "Domain address verified",
-      `Active digital presence in ${input.location}`,
-    ];
-  }
-
-  // We map the new AgentCategoryScore back to the expected CategoryScore type by stripping findings
-  // or passing them through if the UI ever supports them (currently UI expects CategoryScore)
   const mappedCategories = {
     websiteClarity: categories.websiteClarity,
     aiVisibility: categories.aiVisibility,
@@ -67,7 +57,17 @@ export async function runIntelligenceSynthesisAgent(
     executiveSummary,
     categories: mappedCategories,
     aiReadinessDetails: baseline.aiReadinessDetails,
-    actionPlan: baseline.actionPlan,
+    actionPlan: allFindings
+      .filter(f => f.type === "WEAKNESS" || f.type === "OPPORTUNITY")
+      .map((f, i) => ({
+        id: `ACT-${i}`,
+        tier: f.priority === "HIGH" ? "FIX_NOW" : (f.priority === "MEDIUM" ? "FIX_NEXT" : "OPTIMIZE_LATER"),
+        title: f.title,
+        description: f.recommendedAction,
+        impact: f.priority,
+        effort: "MEDIUM",
+        category: f.source
+      })),
     competitorComparison: baseline.competitorComparison,
     customerIntentAnalysis: baseline.customerIntentAnalysis,
     thirtyDayPlan: baseline.thirtyDayPlan,

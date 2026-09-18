@@ -46,14 +46,18 @@ export interface CrawlResult {
 }
 
 export interface Finding {
+  id: string; // Unique identifier for cross-referencing
+  type: "STRENGTH" | "WEAKNESS" | "OPPORTUNITY" | "INSIGHT";
   title: string;
-  whatWeFound: string;
-  whyItMatters: string;
-  businessImpact: string;
-  recommendedAction: string;
+  whatWeFound: string; // The observed evidence
+  whyItMatters: string; // The contextual finding
+  businessImpact: string; // The impact on the business
+  recommendedAction: string; // The resulting recommendation
   priority: "HIGH" | "MEDIUM" | "LOW";
   source: string;
   confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED" | "NOT_CONFIRMED" | "INSUFFICIENT_DATA";
+  relatedModules: string[]; // e.g. ["GROWTH", "LOCAL", "SEARCH"]
+  tierAccess: "FREE" | "ESSENTIAL" | "GROWTH" | "AUTHORITY";
 }
 
 export interface CategoryScore {
@@ -61,11 +65,7 @@ export interface CategoryScore {
   weight: number; // percentage (e.g. 20)
   status: "critical" | "warning" | "good" | "excellent" | "insufficient";
   explanation: string;
-  strengths: string[];
-  weaknesses: string[];
-  evidence: string[];
-  recommendations: string[];
-  findings?: Finding[];
+  findings: Finding[];
 }
 
 export interface ActionPlanItem {
@@ -133,10 +133,8 @@ export interface GeneratedSchema {
 export interface AuditReportDataPayload {
   executiveSummary: {
     currentVisibility: string;
-    topStrengths: string[];
-    topProblems: string[];
-    topOpportunities: string[];
     visibilityStatement: string;
+    keyFindings: Finding[]; // Canonical list of top insights across categories
   };
   categories: {
     websiteClarity: CategoryScore;

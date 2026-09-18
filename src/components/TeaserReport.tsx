@@ -170,16 +170,20 @@ export default function TeaserReport({
                 <div className="flex items-center gap-2 text-rose-400 text-sm font-bold uppercase tracking-wider">
                   <AlertTriangle className="w-4 h-4" /><span>Key Weaknesses</span>
                 </div>
-                {executiveSummary.topProblems.length > 0 && (
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{executiveSummary.topProblems.length} Identified</span>
+                {executiveSummary.keyFindings.filter(f => f.type === "WEAKNESS").length > 0 && (
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{executiveSummary.keyFindings.filter(f => f.type === "WEAKNESS").length} Identified</span>
                 )}
               </div>
-              <ul className="space-y-3">
-                {executiveSummary.topProblems.length > 0 ? (
-                  executiveSummary.topProblems.map((problem, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-300">
-                      <span className="text-rose-500 font-bold shrink-0 leading-none mt-0.5">&#10005;</span>
-                      <span className="leading-relaxed">{problem}</span>
+              <ul className="space-y-4">
+                {executiveSummary.keyFindings.filter(f => f.type === "WEAKNESS").length > 0 ? (
+                  executiveSummary.keyFindings.filter(f => f.type === "WEAKNESS").slice(0, 3).map((finding, idx) => (
+                    <li key={idx} className="flex flex-col gap-1.5 p-3 rounded-lg bg-zinc-950 border border-zinc-800">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-rose-500 font-bold shrink-0 leading-none text-xs">&#10005;</span>
+                        <span className="text-xs font-bold text-white tracking-wider">{finding.title}</span>
+                      </div>
+                      <p className="text-xs text-zinc-400"><strong className="text-zinc-300">Evidence:</strong> {finding.whatWeFound}</p>
+                      <p className="text-xs text-zinc-400"><strong className="text-zinc-300">Impact:</strong> {finding.businessImpact}</p>
                     </li>
                   ))
                 ) : (
@@ -193,16 +197,20 @@ export default function TeaserReport({
                 <div className="flex items-center gap-2 text-indigo-400 text-sm font-bold uppercase tracking-wider">
                   <TrendingUp className="w-4 h-4" /><span>Key Opportunities</span>
                 </div>
-                {executiveSummary.topOpportunities.length > 0 && (
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{executiveSummary.topOpportunities.length} Identified</span>
+                {executiveSummary.keyFindings.filter(f => f.type === "OPPORTUNITY").length > 0 && (
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{executiveSummary.keyFindings.filter(f => f.type === "OPPORTUNITY").length} Identified</span>
                 )}
               </div>
-              <ul className="space-y-3">
-                {executiveSummary.topOpportunities.length > 0 ? (
-                  executiveSummary.topOpportunities.map((opportunity, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-300">
-                      <span className="text-indigo-400 font-bold shrink-0 leading-none mt-0.5">&rarr;</span>
-                      <span className="leading-relaxed">{opportunity}</span>
+              <ul className="space-y-4">
+                {executiveSummary.keyFindings.filter(f => f.type === "OPPORTUNITY").length > 0 ? (
+                  executiveSummary.keyFindings.filter(f => f.type === "OPPORTUNITY").slice(0, 3).map((finding, idx) => (
+                    <li key={idx} className="flex flex-col gap-1.5 p-3 rounded-lg bg-zinc-950 border border-zinc-800">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-indigo-400 font-bold shrink-0 leading-none text-xs">&rarr;</span>
+                        <span className="text-xs font-bold text-white tracking-wider">{finding.title}</span>
+                      </div>
+                      <p className="text-xs text-zinc-400"><strong className="text-zinc-300">Evidence:</strong> {finding.whatWeFound}</p>
+                      <p className="text-xs text-teal-400/90"><strong className="text-teal-400">Action:</strong> {finding.recommendedAction}</p>
                     </li>
                   ))
                 ) : (

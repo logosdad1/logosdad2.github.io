@@ -1,4 +1,4 @@
-import { CrawlResult, CategoryScore } from "../types";
+import { CrawlResult, CategoryScore, Finding } from "../types";
 import { BusinessInput } from "../rule-engine";
 
 export interface EvidenceSource {
@@ -47,17 +47,7 @@ export interface ServiceOpportunity {
   confidence: "HIGH" | "MEDIUM" | "LOW";
 }
 
-export interface Finding {
-  title: string;
-  whatWeFound: string;
-  whyItMatters: string;
-  businessImpact: string;
-  recommendedAction: string;
-  priority: "HIGH" | "MEDIUM" | "LOW";
-  source: string;
-  confidence: "VERIFIED" | "OBSERVED" | "INFERRED" | "RECOMMENDED" | "NOT_CONFIRMED" | "INSUFFICIENT_DATA";
-  evidenceIds?: string[];
-}
+
 
 export interface AgentContext {
   input: BusinessInput;
@@ -71,8 +61,6 @@ export interface BaseAgentResult {
   score: number; // 0-100
   status: "critical" | "warning" | "good" | "excellent" | "insufficient";
   explanation: string;
-  strengths: string[];
-  weaknesses: string[];
   findings: Finding[];
 }
 

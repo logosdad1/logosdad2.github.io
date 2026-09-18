@@ -16,26 +16,33 @@ export async function POST(req: NextRequest) {
 
     const user = await getCurrentUser();
 
-    // 1. Upsert or create business if logged in
     let businessId: string | undefined;
+    let validUserId: string | undefined;
+
     if (user?.userId) {
-      const business = await prisma.business.create({
-        data: {
-          userId: user.userId,
-          name: businessName,
-          websiteUrl: websiteUrl || "",
-          industry: industry || "Other",
-          location,
-        },
-      });
-      businessId = business.id;
+      // Verify user exists to prevent foreign key constraint violations
+      const dbUser = await prisma.user.findUnique({ where: { id: user.userId } });
+      
+      if (dbUser) {
+        validUserId = dbUser.id;
+        const business = await prisma.business.create({
+          data: {
+            userId: validUserId,
+            name: businessName,
+            websiteUrl: websiteUrl || "",
+            industry: industry || "Other",
+            location,
+          },
+        });
+        businessId = business.id;
+      }
     }
 
     // 2. Create Audit shell in QUEUED state immediately (Asynchronous Architecture)
     const audit = await prisma.audit.create({
       data: {
         businessId,
-        userId: user?.userId,
+        userId: validUserId,
         url: websiteUrl || "",
         businessName,
         industry: industry || "Other",

@@ -1,4 +1,5 @@
 "use client";
+console.log("HMR trigger");
 import { useState } from "react";
 import ScoreGauge from "./ScoreGauge";
 import { AuditReportDataPayload, IntelligenceTier } from "@/lib/types";
@@ -47,7 +48,10 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print"><div className="flex items-center gap-3"><div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"><CheckCircle2 className="w-3.5 h-3.5"/><span>Full Unlocked Report &bull; Investigation: {auditId.slice(0,10)}</span></div><span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{tier} TIER</span></div><button onClick={handlePrint} className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-colors"><Printer className="w-3.5 h-3.5"/><span>Download / Print PDF</span></button></div>
       <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print"><div className="flex flex-col md:flex-row items-center justify-between gap-8"><div className="space-y-3 text-center md:text-left flex-1"><div className="text-xs font-mono uppercase tracking-wider text-indigo-400">Business Visibility Intelligence Report &bull; {tier} Tier</div><h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{businessName}</h1><div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 font-mono"><span>{url || "No Website Provided"}</span><span>&bull;</span><span>{industry}</span><span>&bull;</span><span>{location}</span></div><blockquote className="text-sm text-slate-300 italic border-l-2 border-indigo-500 pl-3 mt-2">&ldquo;{executiveSummary.visibilityStatement}&rdquo;</blockquote></div><div className="shrink-0 flex flex-col items-center p-6 rounded-2xl bg-slate-900/80 border border-slate-800 card-print"><span className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Overall Score</span><ScoreGauge score={overallScore} size={150}/></div></div></div>
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-800 no-print">{allTabs.map(tab=>(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${activeTab===tab.id?"bg-indigo-600 text-white shadow-sm":"text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"}`}>{tab.label}</button>))}</div>
-      {(activeTab==="executive"||typeof window==="undefined")&&(<div className="space-y-6"><div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-4"><h2 className="text-lg font-semibold text-white tracking-tight">Executive Summary</h2><p className="text-sm text-slate-300 leading-relaxed">{executiveSummary.currentVisibility}</p><div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-800/80"><div className="space-y-3"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400"><CheckCircle2 className="w-4 h-4"/><span>Top 3 Strengths</span></div><ul className="space-y-2">{executiveSummary.topStrengths.map((s,i)=>(<li key={i} className="text-xs text-slate-300 flex items-start gap-2"><span className="text-emerald-500 font-bold shrink-0">&#10003;</span><span>{s}</span></li>))}</ul></div><div className="space-y-3"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-400"><AlertCircle className="w-4 h-4"/><span>Top 5 Weaknesses</span></div><ul className="space-y-2">{executiveSummary.topProblems.map((p,i)=>(<li key={i} className="text-xs text-slate-300 flex items-start gap-2"><span className="text-rose-500 font-bold shrink-0">&#10005;</span><span>{p}</span></li>))}</ul></div><div className="space-y-3"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400"><Sparkles className="w-4 h-4"/><span>Top 5 Opportunities</span></div><ul className="space-y-2">{executiveSummary.topOpportunities.map((o,i)=>(<li key={i} className="text-xs text-slate-300 flex items-start gap-2"><span className="text-indigo-400 font-bold shrink-0">&rarr;</span><span>{o}</span></li>))}</ul></div></div></div>{tier==="ESSENTIAL"&&(<UpgradeBanner targetTier="GROWTH" price={tp.growth-tp.essential} description="Unlock Customer Intent Analysis, 30-Day Structured Plan, and Competitive & Market Context."/>)}</div>)}
+      {(activeTab==="executive"||typeof window==="undefined")&&(<div className="space-y-6"><div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-4"><h2 className="text-lg font-semibold text-white tracking-tight">Executive Summary</h2><p className="text-sm text-slate-300 leading-relaxed">{executiveSummary.currentVisibility}</p><div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800/80">
+        <div className="space-y-3"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-400"><AlertCircle className="w-4 h-4"/><span>Key Weaknesses</span></div><ul className="space-y-3">{executiveSummary.keyFindings.filter(f=>f.type==="WEAKNESS").slice(0,3).map((finding,i)=>(<li key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-slate-900 border border-slate-800"><div className="flex items-center gap-2"><span className="text-rose-500 font-bold shrink-0 text-xs">&#10005;</span><span className="text-xs font-bold text-white">{finding.title}</span></div><p className="text-xs text-slate-400 mt-1">{finding.whatWeFound}</p></li>))}</ul></div>
+        <div className="space-y-3"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400"><Sparkles className="w-4 h-4"/><span>Key Opportunities</span></div><ul className="space-y-3">{executiveSummary.keyFindings.filter(f=>f.type==="OPPORTUNITY").slice(0,3).map((finding,i)=>(<li key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-slate-900 border border-slate-800"><div className="flex items-center gap-2"><span className="text-indigo-400 font-bold shrink-0 text-xs">&rarr;</span><span className="text-xs font-bold text-white">{finding.title}</span></div><p className="text-xs text-slate-400 mt-1">{finding.whatWeFound}</p><p className="text-[11px] text-teal-400 mt-1">Action: {finding.recommendedAction}</p></li>))}</ul></div>
+      </div></div>{tier==="ESSENTIAL"&&(<UpgradeBanner targetTier="GROWTH" price={tp.growth-tp.essential} description="Unlock Customer Intent Analysis, 30-Day Structured Plan, and Competitive & Market Context."/>)}</div>)}
       {(activeTab==="action_plan"||typeof window==="undefined")&&(<div className="space-y-6"><div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-5"><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h2 className="text-lg font-semibold text-white tracking-tight">Priority Action Plan</h2><p className="text-xs text-slate-400">Ordered by highest ROI. Start at FIX NOW.</p></div><div className="flex items-center gap-1.5 p-1 rounded-lg bg-slate-900 border border-slate-800 no-print">{(["ALL","FIX_NOW","FIX_NEXT","OPTIMIZE_LATER"] as const).map(t=>(<button key={t} onClick={()=>setPlanFilter(t)} className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-medium transition-colors ${planFilter===t?"bg-slate-800 text-white":"text-slate-400 hover:text-white"}`}>{t.replace(/_/g," ")}</button>))}</div></div><div className="space-y-3">{filteredPlan.map(item=>{let bc="bg-rose-500/10 text-rose-400 border-rose-500/30";if(item.tier==="FIX_NEXT")bc="bg-amber-500/10 text-amber-400 border-amber-500/30";if(item.tier==="OPTIMIZE_LATER")bc="bg-blue-500/10 text-blue-400 border-blue-500/30";return(<div key={item.id} className="p-4 rounded-xl bg-slate-900/50 border border-slate-800/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 card-print"><div className="space-y-1"><div className="flex items-center gap-2"><span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${bc}`}>{item.tier.replace(/_/g," ")}</span><span className="text-[11px] font-mono text-slate-500">{item.category}</span></div><h4 className="text-sm font-semibold text-white">{item.title}</h4><p className="text-xs text-slate-300 leading-relaxed max-w-2xl">{item.description}</p></div><div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0"><span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Impact: {item.impact}</span><span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800/60 text-slate-400">Effort: {item.effort}</span></div></div>);})}</div></div></div>)}
       {activeTab === "ai_visibility" && (
         <div className="space-y-6">
@@ -119,20 +123,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
-                  <div className="text-xs font-bold text-slate-300">Observed Evidence</div>
-                  <ul className="space-y-1.5 text-xs text-slate-400">
-                    {aiReadinessDetails.observedEvidence.map((ev, i) => <li key={i}>&bull; {ev}</li>)}
-                  </ul>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
-                  <div className="text-xs font-bold text-indigo-300">Key Recommendations</div>
-                  <ul className="space-y-1.5 text-xs text-slate-300">
-                    {categories.aiVisibility.recommendations.map((rec, i) => <li key={i}>&rarr; {rec}</li>)}
-                  </ul>
-                </div>
-              </div>
+              <div className="text-xs text-slate-500 italic">No significant intelligence findings available.</div>
             )}
           </div>
         </div>
@@ -217,34 +208,9 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-emerald-400">Strengths Identified</div>
-                    <ul className="space-y-1.5 text-xs text-slate-300">
-                      {cc.data.strengths.length > 0 ? cc.data.strengths.map((s: string, i: number) => (
-                        <li key={i} className="flex items-start gap-1.5"><span className="text-emerald-400">&#10003;</span><span>{s}</span></li>
-                      )) : <li className="text-slate-500">No major strengths recorded.</li>}
-                    </ul>
-                  </div>
-                  <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-rose-400">Weaknesses / Gaps</div>
-                    <ul className="space-y-1.5 text-xs text-slate-300">
-                      {cc.data.weaknesses.map((w: string, i: number) => (
-                        <li key={i} className="flex items-start gap-1.5"><span className="text-rose-400">&#10005;</span><span>{w}</span></li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                {(!cc.data.findings || cc.data.findings.length === 0) && (
-                  <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-indigo-300">Recommended Steps</div>
-                    <ul className="space-y-1.5 text-xs text-slate-300">
-                      {cc.data.recommendations.map((r: string, i: number) => (
-                        <li key={i} className="flex items-start gap-1.5"><span className="text-indigo-400">&rarr;</span><span>{r}</span></li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {!cc.data.findings || cc.data.findings.length === 0 ? (
+                  <div className="text-xs text-slate-500 italic">No significant intelligence findings available.</div>
+                ) : null}
               </div>
             );
           })()}
