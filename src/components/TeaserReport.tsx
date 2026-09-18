@@ -80,13 +80,13 @@ export default function TeaserReport({
 
   const { executiveSummary } = reportData;
 
-  let statusLabel = "Needs improvement / Critical";
+  let statusLabel = "LIMITED VISIBILITY";
   let statusColor = "text-rose-400";
   if (overallScore >= 75) {
-    statusLabel = "Good / Competitive";
+    statusLabel = "STRONG VISIBILITY";
     statusColor = "text-emerald-400";
   } else if (overallScore >= 50) {
-    statusLabel = "Fair / Needs Attention";
+    statusLabel = "MODERATE VISIBILITY";
     statusColor = "text-amber-400";
   }
 
@@ -110,9 +110,9 @@ export default function TeaserReport({
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Stage 1 & 2: Score Reveal */}
-      <div className="rounded-3xl border border-zinc-800 bg-[#121212]/90 p-8 sm:p-10 backdrop-blur-sm shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-        {/* Background glow tied to score */}
-        <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-[100px] pointer-events-none opacity-20 ${
+      <div className="rounded-3xl border border-zinc-800 bg-[#121212]/90 p-8 sm:p-10 backdrop-blur-sm shadow-xl relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
+        {/* Background glow tied to score (subtle) */}
+        <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-10 ${
           overallScore >= 75 ? "bg-emerald-500" : overallScore >= 50 ? "bg-amber-500" : "bg-rose-500"
         }`} />
 
@@ -141,12 +141,39 @@ export default function TeaserReport({
         </div>
       </div>
 
+      {revealStage >= 2 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {[
+            { label: "Website Clarity", score: reportData.categories.websiteClarity?.score || 0 },
+            { label: "Search & Local", score: reportData.categories.searchLocal?.score || 0 },
+            { label: "AI Visibility", score: reportData.categories.aiVisibility?.score || 0 },
+            { label: "Trust Signals", score: reportData.categories.trustCredibility?.score || 0 },
+            { label: "Content Auth", score: reportData.categories.contentAuthority?.score || 0 },
+            { label: "Conversion", score: reportData.categories.conversionReadiness?.score || 0 },
+          ].map((cat, i) => (
+            <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-[#121212]/90 border border-zinc-800/80 backdrop-blur-sm shadow-sm">
+              <span className="text-[11px] font-mono font-semibold tracking-wider text-zinc-400 uppercase">{cat.label}</span>
+              <span className={`text-sm font-bold ${
+                cat.score >= 75 ? "text-emerald-400" : cat.score >= 50 ? "text-amber-400" : "text-rose-400"
+              }`}>{cat.score}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {revealStage >= 3 && (
-        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            <div className="p-6 rounded-2xl border border-rose-900/30 bg-rose-950/10 space-y-4">
-              <div className="flex items-center gap-2 text-rose-400 text-sm font-bold uppercase tracking-wider">
-                <AlertTriangle className="w-5 h-5" /><span>Top 5 Weaknesses</span>
+        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-8 mt-8">
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-white tracking-tight px-2">WHAT WE FOUND</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center gap-2 text-rose-400 text-sm font-bold uppercase tracking-wider">
+                  <AlertTriangle className="w-4 h-4" /><span>Key Weaknesses</span>
+                </div>
+                {executiveSummary.topProblems.length > 0 && (
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{executiveSummary.topProblems.length} Identified</span>
+                )}
               </div>
               <ul className="space-y-3">
                 {executiveSummary.topProblems.length > 0 ? (
@@ -157,14 +184,19 @@ export default function TeaserReport({
                     </li>
                   ))
                 ) : (
-                  <li className="text-xs text-zinc-500">No major weaknesses detected.</li>
+                  <li className="text-xs text-zinc-500 font-mono py-2">NO SIGNIFICANT WEAKNESSES DETECTED</li>
                 )}
               </ul>
             </div>
             
-            <div className="p-6 rounded-2xl border border-indigo-900/30 bg-indigo-950/10 space-y-4">
-              <div className="flex items-center gap-2 text-indigo-400 text-sm font-bold uppercase tracking-wider">
-                <Sparkles className="w-5 h-5" /><span>Top 5 Opportunities</span>
+            <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center gap-2 text-indigo-400 text-sm font-bold uppercase tracking-wider">
+                  <TrendingUp className="w-4 h-4" /><span>Key Opportunities</span>
+                </div>
+                {executiveSummary.topOpportunities.length > 0 && (
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{executiveSummary.topOpportunities.length} Identified</span>
+                )}
               </div>
               <ul className="space-y-3">
                 {executiveSummary.topOpportunities.length > 0 ? (
@@ -175,41 +207,46 @@ export default function TeaserReport({
                     </li>
                   ))
                 ) : (
-                  <li className="text-xs text-zinc-500">No immediate opportunities detected.</li>
+                  <li className="text-xs text-zinc-500 font-mono py-2">NO IMMEDIATE OPPORTUNITIES DETECTED</li>
                 )}
               </ul>
             </div>
+          </div>
           </div>
 
       {!showLocked ? (
         <div className="pt-4 flex justify-center">
           <button
             onClick={() => setShowLocked(true)}
-            className="py-3 px-8 rounded-full bg-teal-500 hover:bg-teal-400 text-zinc-950 text-sm font-semibold flex items-center gap-2 transition-all shadow-md group"
+            className="py-3 px-8 rounded-full bg-teal-500 hover:bg-teal-400 text-zinc-950 text-sm font-semibold flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(20,184,166,0.2)] hover:shadow-[0_0_30px_rgba(20,184,166,0.4)] group"
           >
-            <span>See What Else We Found</span>
+            <span>See Deeper Intelligence</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
       ) : (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="p-6 rounded-2xl border border-zinc-800 bg-[#121212]/80 space-y-4">
-            <div className="flex items-center gap-2 text-teal-400 mb-4">
-              <Lock className="w-5 h-5" />
-              <h3 className="text-lg font-semibold text-white">Deeper Opportunities Found</h3>
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-10">
+          <div className="p-8 rounded-2xl border border-zinc-800 bg-[#121212]/90 space-y-6">
+            <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
+              <div className="p-2 rounded-lg bg-zinc-800 text-zinc-400"><Lock className="w-5 h-5" /></div>
+              <h3 className="text-xl font-bold text-white tracking-tight">DEEPER INTELLIGENCE AVAILABLE</h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                "Competitor visibility & benchmark matrix",
-                "Customer intent & question gap analysis",
-                "Generative query coverage (simulated LLM ranking)",
-                "Full technical AI-readiness diagnostic",
-                "30-day prioritized action plan & roadmap",
-                "Structured schema code generator"
+                { title: "CUSTOMER INTENT INTELLIGENCE", desc: "Understand what potential customers are trying to discover, evaluate, compare and act on.", tier: "Growth Intelligence" },
+                { title: "CONTENT OPPORTUNITY MAP", desc: "Discover customer questions and content gaps surrounding your business.", tier: "Growth Intelligence" },
+                { title: "PRIORITY ACTION PLAN", desc: "Know what to fix first based on impact and effort.", tier: "Growth Intelligence" },
+                { title: "AI VISIBILITY DEEP DIVE", desc: "Understand how clearly your business information can be interpreted by modern discovery systems.", tier: "Authority Intelligence" }
               ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2.5 p-3 rounded-lg bg-zinc-900/50 border border-zinc-800/80 text-xs text-zinc-300">
-                  <Lock className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                  <span>{item}</span>
+                <div key={idx} className="flex flex-col p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-white tracking-wider">{item.title}</h4>
+                  </div>
+                  <p className="text-xs text-zinc-400 leading-relaxed flex-1">{item.desc}</p>
+                  <div className="pt-2 mt-auto border-t border-zinc-800/60">
+                    <span className="text-[10px] font-mono font-medium text-teal-400">Available in {item.tier}</span>
+                  </div>
                 </div>
               ))}
             </div>

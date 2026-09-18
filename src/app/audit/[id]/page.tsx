@@ -108,19 +108,25 @@ function AuditDetailContent() {
             <p className="text-sm font-mono text-teal-400">{statusMessages[audit.status] || "Connecting digital evidence..."}</p>
           </div>
           
-          <div className="flex flex-col text-left space-y-4 pt-8 border-t border-zinc-800 relative z-10">
-            <div className={`flex items-center gap-3 transition-all ${audit.status !== 'QUEUED' ? 'text-emerald-400' : 'text-zinc-600'}`}>
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">{audit.status !== 'QUEUED' ? '✓' : '○'}</div> 
-              <span className="text-sm font-semibold tracking-wide">Business identity resolved</span>
-            </div>
-            <div className={`flex items-center gap-3 transition-all ${['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status) ? 'text-emerald-400' : 'text-zinc-600'}`}>
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">{['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status) ? '✓' : '○'}</div> 
-              <span className="text-sm font-semibold tracking-wide">Digital evidence investigated</span>
-            </div>
-            <div className={`flex items-center gap-3 transition-all ${['SCORING', 'PROCESSING'].includes(audit.status) ? 'text-emerald-400' : 'text-zinc-600'}`}>
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">{['SCORING', 'PROCESSING'].includes(audit.status) ? '✓' : '○'}</div> 
-              <span className="text-sm font-semibold tracking-wide">Customer intent understood</span>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left pt-8 border-t border-zinc-800 relative z-10 max-w-md mx-auto">
+            {[
+              { label: "Business identity", done: ['DISCOVERING', 'ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'QUEUED' },
+              { label: "Website", done: ['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'DISCOVERING' },
+              { label: "Search", done: ['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'DISCOVERING' },
+              { label: "Local presence", done: ['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'DISCOVERING' },
+              { label: "Public profiles", done: ['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'DISCOVERING' },
+              { label: "Trust signals", done: ['SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'ANALYZING' },
+              { label: "Content", done: ['SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'ANALYZING' },
+              { label: "Customer intent", done: ['SCORING', 'PROCESSING'].includes(audit.status), active: audit.status === 'ANALYZING' },
+              { label: "Connecting evidence", done: false, active: audit.status === 'SCORING' || audit.status === 'PROCESSING' }
+            ].map((step, idx) => (
+              <div key={idx} className={`flex items-center gap-3 transition-all ${step.done ? 'text-emerald-400' : step.active ? 'text-teal-400' : 'text-zinc-600'}`}>
+                <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                  {step.done ? '✓' : step.active ? <span className="animate-pulse">→</span> : '○'}
+                </div> 
+                <span className={`text-sm tracking-wide ${step.done || step.active ? 'font-semibold' : 'font-medium'}`}>{step.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

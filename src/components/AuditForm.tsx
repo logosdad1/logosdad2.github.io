@@ -9,16 +9,6 @@ interface AuditFormProps {
   className?: string;
 }
 
-const PROGRESS_STEPS = [
-  "Establishing business identity",
-  "Examining website signals",
-  "Investigating search visibility",
-  "Checking local presence",
-  "Reviewing public trust signals",
-  "Understanding customer intent",
-  "Connecting the evidence"
-];
-
 export default function AuditForm({ defaultIndustry = "Roofing", className = "" }: AuditFormProps) {
   const router = useRouter();
   const [businessName, setBusinessName] = useState("");
@@ -26,7 +16,6 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
   const [industry, setIndustry] = useState(defaultIndustry);
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,14 +27,6 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
 
     setError(null);
     setLoading(true);
-    setStepIndex(0);
-
-    const interval = setInterval(() => {
-      setStepIndex((prev) => {
-        if (prev < PROGRESS_STEPS.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 1500);
 
     try {
       const res = await fetch("/api/audit/create", {
@@ -59,11 +40,9 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
         }),
       });
 
-      clearInterval(interval);
-
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to complete analysis. Please try again.");
+        throw new Error(data.error || "Failed to initiate analysis. Please try again.");
       }
 
       const data = await res.json();
@@ -76,7 +55,6 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
 
       router.push(`/audit/${data.auditId}`);
     } catch (err: any) {
-      clearInterval(interval);
       setError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
@@ -90,52 +68,18 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent" />
 
         {loading ? (
-          <div className="py-16 px-6 relative z-10 min-h-[500px] flex flex-col items-center justify-center">
+          <div className="py-24 px-6 relative z-10 flex flex-col items-center justify-center">
             {/* Visual Metaphor: Signals converging */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
               <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-teal-500 rounded-full blur-[80px] animate-pulse" />
               <div className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-emerald-500 rounded-full blur-[80px] animate-pulse delay-700" />
             </div>
 
-            <div className="text-center space-y-4 mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 shadow-sm shadow-teal-500/20 mb-2">
-                <Sparkles className="w-4 h-4 text-teal-400" />
-                <span>ordigit INVESTIGATION</span>
-              </div>
-              <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Building your digital visibility picture...
-              </h3>
-            </div>
-
-            <div className="w-full max-w-xl mx-auto bg-[#121212]/90 border border-zinc-800/80 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
-              <div className="space-y-4">
-                {PROGRESS_STEPS.map((step, idx) => {
-                  const isCompleted = idx < stepIndex;
-                  const isCurrent = idx === stepIndex;
-                  const isPending = idx > stepIndex;
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`flex items-center gap-4 transition-all duration-500 ${
-                        isCompleted ? "text-emerald-400" : isCurrent ? "text-teal-300 translate-x-2" : "text-zinc-600"
-                      }`}
-                    >
-                      <div className="w-6 h-6 flex items-center justify-center shrink-0">
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        ) : isCurrent ? (
-                          <ArrowRight className="w-5 h-5 text-teal-400 animate-pulse" />
-                        ) : (
-                          <div className="w-2 h-2 rounded-full bg-zinc-700" />
-                        )}
-                      </div>
-                      <span className={`text-base md:text-lg ${isCurrent ? "font-semibold" : "font-medium"}`}>
-                        {step}
-                      </span>
-                    </div>
-                  );
-                })}
+            <div className="text-center space-y-6">
+              <Activity className="w-12 h-12 text-teal-400 animate-pulse mx-auto" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30">
+                <Sparkles className="w-4 h-4" />
+                <span>INITIATING ORDIGIT INVESTIGATION</span>
               </div>
             </div>
           </div>

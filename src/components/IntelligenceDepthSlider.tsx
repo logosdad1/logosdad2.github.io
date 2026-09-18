@@ -30,11 +30,11 @@ const TIERS: TierInfo[] = [
     name: "Visibility Snapshot",
     price: 0,
     label: "FREE",
-    promise: "See my score and basic findings.",
+    promise: "What do you see?",
     unlockedFeatures: [
       "Overall Business Visibility Score (0–100)",
       "6 core dimension score meters",
-      "Top 3 verified strengths & top 2 urgent warnings",
+      "Top verified strengths & urgent warnings",
       "Biggest high-level opportunity statement",
     ],
     lockedFeatures: [
@@ -52,7 +52,7 @@ const TIERS: TierInfo[] = [
     name: "Essential Intelligence",
     price: 10,
     label: "$10",
-    promise: "Understand your biggest visibility gaps.",
+    promise: "Why am I getting this result?",
     unlockedFeatures: [
       "Everything in Snapshot",
       "Full technical website clarity & UX breakdown",
@@ -78,7 +78,7 @@ const TIERS: TierInfo[] = [
     price: 25,
     label: "$25",
     badge: "MOST POPULAR",
-    promise: "Understand customer intent, opportunities and what to fix next.",
+    promise: "Where are my biggest growth opportunities?",
     unlockedFeatures: [
       "Everything in Essential ($10)",
       "Competitive & Market Context (Your site vs benchmarks)",
@@ -100,7 +100,7 @@ const TIERS: TierInfo[] = [
     price: 50,
     label: "$50",
     badge: "PREMIUM STRATEGIC",
-    promise: "Go deeper into positioning, authority, content and long-term growth.",
+    promise: "How do I build a stronger long-term digital position?",
     unlockedFeatures: [
       "Everything in Growth ($25)",
       "Deeper Discovery Questions (Simulated generative search evaluations)",
