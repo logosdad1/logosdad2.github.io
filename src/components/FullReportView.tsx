@@ -43,7 +43,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <div className="space-y-2">
-              <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">What You Have</div>
+              <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">What You Can Understand Now</div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-slate-300 font-medium leading-relaxed">
@@ -53,7 +53,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-wider">What ordigit Found</div>
+              <div className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-wider">What ordigit Already Found</div>
               <div className="flex items-start gap-2">
                 <Lock className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
                 <p className="text-sm text-indigo-200 font-medium leading-relaxed">
@@ -63,7 +63,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider">What {targetTier.charAt(0) + targetTier.slice(1).toLowerCase()} Adds</div>
+              <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider">What The Next Level Reveals</div>
               <div className="flex items-start gap-2">
                 <ArrowRight className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-200 font-medium leading-relaxed">

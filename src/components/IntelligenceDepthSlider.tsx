@@ -30,7 +30,7 @@ const TIERS: TierInfo[] = [
     name: "Visibility Snapshot",
     price: 0,
     label: "FREE",
-    promise: "What do you see?",
+    promise: "Shows the first layer.",
     unlockedFeatures: [
       "Overall Business Visibility Score (0–100)",
       "6 core dimension score meters",
@@ -52,7 +52,7 @@ const TIERS: TierInfo[] = [
     name: "Essential Intelligence",
     price: 10,
     label: "$10",
-    promise: "Why am I getting this result?",
+    promise: "Explains the evidence.",
     unlockedFeatures: [
       "Everything in Snapshot",
       "Full technical website clarity & UX breakdown",
@@ -78,7 +78,7 @@ const TIERS: TierInfo[] = [
     price: 25,
     label: "$25",
     badge: "MOST POPULAR",
-    promise: "Where are my biggest growth opportunities?",
+    promise: "Connects the evidence into growth opportunities.",
     unlockedFeatures: [
       "Everything in Essential ($10)",
       "Competitive & Market Context (Your site vs benchmarks)",
@@ -100,7 +100,7 @@ const TIERS: TierInfo[] = [
     price: 50,
     label: "$50",
     badge: "PREMIUM STRATEGIC",
-    promise: "How do I build a stronger long-term digital position?",
+    promise: "Turns that intelligence into a broader strategic position.",
     unlockedFeatures: [
       "Everything in Growth ($25)",
       "Deeper Discovery Questions (Simulated generative search evaluations)",
@@ -114,9 +114,18 @@ const TIERS: TierInfo[] = [
   },
 ];
 
+const FOUND_EVIDENCE = [
+  "Raw digital footprint signals & gaps",
+  "Technical website performance metrics",
+  "Competitor & market benchmarking data",
+  "Customer intent search patterns",
+  "Generative AI discovery capabilities",
+  "Business & entity identity consistency"
+];
+
 export default function IntelligenceDepthSlider({
   currentTier = "SNAPSHOT",
-  initialSelectedTier = "GROWTH",
+  initialSelectedTier = "ESSENTIAL",
   onSelectTier,
   showActionButton = true,
   actionButtonLabel,
@@ -246,12 +255,29 @@ export default function IntelligenceDepthSlider({
         </div>
 
         {/* Intelligence Unlocks Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-4">
-          {/* Unlocked */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 pt-4">
+          
+          {/* Column 1: Found */}
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#0c111d]/30 border border-indigo-900/30 space-y-4">
+            <div className="text-xs font-mono uppercase tracking-widest text-indigo-400 font-bold flex items-center gap-2 pb-2 border-b border-indigo-900/30">
+              <Sparkles className="w-4 h-4" />
+              <span>What ordigit Already Found</span>
+            </div>
+            <ul className="space-y-3 text-sm text-zinc-400">
+              {FOUND_EVIDENCE.map((feat, i) => (
+                <li key={i} className="flex items-start gap-3 leading-relaxed">
+                  <span className="text-indigo-400 font-bold shrink-0 mt-0.5">·</span>
+                  <span>{feat}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 2: Unlocked */}
           <div className="p-6 sm:p-8 rounded-2xl bg-[#0c111d]/50 border border-teal-900/30 space-y-4">
             <div className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold flex items-center gap-2 pb-2 border-b border-teal-900/30">
               <Check className="w-4 h-4" />
-              <span>Intelligence Included ({activeTier.label})</span>
+              <span>What You Can Understand Now</span>
             </div>
             <ul className="space-y-3 text-sm text-zinc-300">
               {activeTier.unlockedFeatures.map((feat, i) => (
@@ -263,27 +289,27 @@ export default function IntelligenceDepthSlider({
             </ul>
           </div>
 
-          {/* Locked at this tier */}
+          {/* Column 3: Locked */}
           <div className="p-6 sm:p-8 rounded-2xl bg-[#121212] border border-zinc-800/80 space-y-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-800/10 rounded-bl-full pointer-events-none" />
             
-            <div className="text-xs font-mono uppercase tracking-widest text-zinc-500 font-bold flex items-center gap-2 pb-2 border-b border-zinc-800/80">
+            <div className="text-xs font-mono uppercase tracking-widest text-amber-500 font-bold flex items-center gap-2 pb-2 border-b border-zinc-800/80">
               <Lock className="w-4 h-4" />
-              <span>Requires Higher Intelligence</span>
+              <span>What The Next Level Reveals</span>
             </div>
             {activeTier.lockedFeatures.length > 0 ? (
               <ul className="space-y-3 text-sm text-zinc-500">
                 {activeTier.lockedFeatures.map((feat, i) => (
                   <li key={i} className="flex items-start gap-3 leading-relaxed">
-                    <span className="text-zinc-600 shrink-0 mt-0.5">🔒</span>
+                    <span className="text-amber-500/50 shrink-0 mt-0.5">🔒</span>
                     <span className="line-through decoration-zinc-700/50">{feat}</span>
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="h-full flex flex-col justify-center pb-8">
-                <Sparkles className="w-8 h-8 text-teal-500/40 mb-3" />
-                <p className="text-sm text-teal-300/80 leading-relaxed">
+                <Sparkles className="w-8 h-8 text-amber-500/40 mb-3" />
+                <p className="text-sm text-amber-300/80 leading-relaxed">
                   You have unlocked maximum strategic depth. This includes full executive directives, simulated generative query evaluations, and complete developer handoff blueprints.
                 </p>
               </div>
