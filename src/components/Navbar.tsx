@@ -32,10 +32,7 @@ export default function Navbar() {
             <Eye className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-base font-semibold tracking-tight text-white">Omnisight</span>
-            <span className="text-xs font-mono ml-1.5 px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-              AI
-            </span>
+            <span className="text-xl font-bold tracking-tight text-white lowercase">ordigit</span>
           </div>
         </Link>
 

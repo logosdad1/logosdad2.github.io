@@ -29,15 +29,18 @@ export async function POST(req: NextRequest) {
     }
 
     // STATUS: DISCOVERING
+    console.info(`[PIPELINE START] Audit ID: ${auditId} | Target: ${audit.url || audit.businessName}`);
     await prisma.audit.update({
       where: { id: auditId },
       data: { status: "DISCOVERING" }
     });
 
     // 1. Crawl website (if URL exists)
+    console.info(`[DISCOVERY PHASE] Crawling: ${audit.url || 'No URL provided'}`);
     const crawl = await crawlWebsite(audit.url || "");
 
     // STATUS: ANALYZING
+    console.info(`[AGENT PHASE] Running intelligence agents...`);
     await prisma.audit.update({
       where: { id: auditId },
       data: { status: "ANALYZING" }
@@ -55,6 +58,7 @@ export async function POST(req: NextRequest) {
     );
 
     // STATUS: SCORING
+    console.info(`[SCORING PHASE] Calculating final visibility score...`);
     await prisma.audit.update({
       where: { id: auditId },
       data: { status: "SCORING" }
@@ -90,9 +94,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    console.info(`[PIPELINE SUCCESS] Audit ID: ${auditId} completed with score: ${overallScore}`);
     return NextResponse.json({ success: true, status: "COMPLETED" });
   } catch (error: any) {
-    console.error("Worker processing failed for audit:", auditId, error);
+    console.error(`[PIPELINE FAILED] Audit ID: ${auditId || 'Unknown'} - Error:`, error.message);
+    console.error(error.stack);
     
     if (auditId) {
       await prisma.audit.update({

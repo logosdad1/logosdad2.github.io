@@ -68,7 +68,7 @@ function LoginForm() {
           <Eye className="w-5 h-5" />
         </div>
         <h1 className="text-2xl font-bold text-white tracking-tight">
-          Sign In to Omnisight
+          Sign In to ordigit
         </h1>
         <p className="text-xs text-slate-400">
           Access your saved business reports and visibility benchmarks.
@@ -93,7 +93,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@omnisight.ai or your email"
+              placeholder="admin@ordigit.com or your email"
               className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
             />
           </div>
@@ -131,7 +131,7 @@ function LoginForm() {
 
         <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
           <div className="text-indigo-300 font-medium">Default Admin Credentials:</div>
-          <div>Email: <code className="text-white font-mono">admin@omnisight.ai</code></div>
+          <div>Email: <code className="text-white font-mono">admin@ordigit.com</code></div>
           <div>Password: <code className="text-white font-mono">AdminPassword2026!</code></div>
         </div>
 

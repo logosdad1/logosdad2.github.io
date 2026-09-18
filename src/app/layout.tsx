@@ -7,9 +7,9 @@ import Footer from "@/components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Omnisight AI — How Does AI See Your Business?",
+  title: "ordigit — How Does AI See Your Business?",
   description:
-    "Get a simple AI-powered audit of your website, digital presence, and AI visibility — and discover what's making your business harder to find, understand, and trust.",
+    "Business Visibility Intelligence. Discover how AI, search, and maps understand your business.",
 };
 
 export default function RootLayout({

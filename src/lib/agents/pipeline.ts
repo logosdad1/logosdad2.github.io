@@ -38,12 +38,15 @@ export async function runModularIntelligencePipeline(
 
   const discoveryPromises = discoveryProviders.map(provider => 
     provider.discover(identity).catch(e => {
-      console.warn(`Discovery provider ${provider.sourceType} failed:`, e.message);
-      return []; // Graceful degradation for partial failures (Rule 26)
+      console.warn(`[DISCOVERY WARNING] Provider ${provider.sourceType} failed:`, e.message);
+      return []; // Fallback to empty array
     })
   );
 
-  const evidenceArrays = await Promise.all(discoveryPromises);
+  const results = await Promise.allSettled(discoveryPromises);
+  const evidenceArrays = results.map(result => 
+    result.status === 'fulfilled' ? result.value : []
+  );
   const evidence: Evidence[] = evidenceArrays.flat();
 
   // Create standard Agent Context with Identity and Evidence

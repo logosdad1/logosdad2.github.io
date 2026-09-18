@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
 
-    response.cookies.set("omnisight_token", token, {
+    response.cookies.set("ordigit_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

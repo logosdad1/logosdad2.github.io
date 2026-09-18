@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Globe, Building2, MapPin, Briefcase, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Globe, Building2, MapPin, Briefcase, Loader2, Sparkles, CheckCircle2, Search, Activity } from "lucide-react";
 
 interface AuditFormProps {
   defaultIndustry?: string;
@@ -10,12 +10,13 @@ interface AuditFormProps {
 }
 
 const PROGRESS_STEPS = [
-  "IDENTIFYING YOUR BUSINESS",
-  "DISCOVERING YOUR DIGITAL PRESENCE",
-  "CHECKING PUBLIC SIGNALS",
-  "ANALYZING CUSTOMER INTENT",
-  "CONNECTING THE EVIDENCE",
-  "BUILDING YOUR VISIBILITY REPORT",
+  "Establishing business identity",
+  "Examining website signals",
+  "Investigating search visibility",
+  "Checking local presence",
+  "Reviewing public trust signals",
+  "Understanding customer intent",
+  "Connecting the evidence"
 ];
 
 export default function AuditForm({ defaultIndustry = "Roofing", className = "" }: AuditFormProps) {
@@ -39,13 +40,12 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
     setLoading(true);
     setStepIndex(0);
 
-    // Simulate realistic multi-agent progress steps
     const interval = setInterval(() => {
       setStepIndex((prev) => {
         if (prev < PROGRESS_STEPS.length - 1) return prev + 1;
         return prev;
       });
-    }, 1800);
+    }, 1500);
 
     try {
       const res = await fetch("/api/audit/create", {
@@ -67,6 +67,13 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
       }
 
       const data = await res.json();
+      
+      fetch("/api/audit/worker", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ auditId: data.auditId })
+      }).catch(console.error);
+
       router.push(`/audit/${data.auditId}`);
     } catch (err: any) {
       clearInterval(interval);
@@ -76,164 +83,213 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
   };
 
   return (
-    <div className={`w-full max-w-4xl mx-auto ${className}`} id="audit-form">
-      <div className="rounded-2xl border border-zinc-800 bg-[#121212]/90 p-6 md:p-10 lg:p-12 shadow-2xl relative overflow-hidden">
-        {/* Subtle accent border line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal-500/50 to-transparent" />
+    <div className={`w-full max-w-5xl mx-auto ${className}`} id="audit-form">
+      <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+        {/* Animated gradient border effect (pseudo-border) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-teal-500/0 via-teal-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent" />
 
         {loading ? (
-          <div className="py-12 text-center space-y-8">
-            <div className="inline-flex p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
-              <Loader2 className="w-10 h-10 animate-spin" />
+          <div className="py-16 px-6 relative z-10 min-h-[500px] flex flex-col items-center justify-center">
+            {/* Visual Metaphor: Signals converging */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-teal-500 rounded-full blur-[80px] animate-pulse" />
+              <div className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-emerald-500 rounded-full blur-[80px] animate-pulse delay-700" />
             </div>
 
-            <div className="space-y-3">
-              <h3 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
-                Analyzing Your Business
+            <div className="text-center space-y-4 mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 shadow-sm shadow-teal-500/20 mb-2">
+                <Sparkles className="w-4 h-4 text-teal-400" />
+                <span>ordigit INVESTIGATION</span>
+              </div>
+              <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Building your digital visibility picture...
               </h3>
-              <p className="text-sm font-mono text-teal-400 animate-pulse transition-all">
-                {PROGRESS_STEPS[stepIndex]}
-              </p>
             </div>
 
-            {/* Step badges */}
-            <div className="grid grid-cols-1 gap-3 max-w-lg mx-auto text-left pt-4">
-              {PROGRESS_STEPS.map((step, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors ${
-                    idx < stepIndex
-                      ? "text-emerald-400 bg-emerald-950/20 border border-emerald-900/30"
-                      : idx === stepIndex
-                      ? "text-teal-300 bg-teal-950/40 border border-teal-800/40"
-                      : "text-zinc-600 bg-zinc-900/20"
-                  }`}
-                >
-                  {idx < stepIndex ? (
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                  ) : idx === stepIndex ? (
-                    <Loader2 className="w-4 h-4 shrink-0 animate-spin text-teal-400" />
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border border-zinc-700 shrink-0" />
-                  )}
-                  <span className="truncate">{step.replace(/\.\.\./, "")}</span>
-                </div>
-              ))}
-            </div>
+            <div className="w-full max-w-xl mx-auto bg-[#121212]/90 border border-zinc-800/80 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
+              <div className="space-y-4">
+                {PROGRESS_STEPS.map((step, idx) => {
+                  const isCompleted = idx < stepIndex;
+                  const isCurrent = idx === stepIndex;
+                  const isPending = idx > stepIndex;
 
-            <p className="text-xs text-zinc-500 pt-2">
-              Running multi-agent investigation. This takes approximately 8–12 seconds.
-            </p>
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-center gap-4 transition-all duration-500 ${
+                        isCompleted ? "text-emerald-400" : isCurrent ? "text-teal-300 translate-x-2" : "text-zinc-600"
+                      }`}
+                    >
+                      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        ) : isCurrent ? (
+                          <ArrowRight className="w-5 h-5 text-teal-400 animate-pulse" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                        )}
+                      </div>
+                      <span className={`text-base md:text-lg ${isCurrent ? "font-semibold" : "font-medium"}`}>
+                        {step}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-2 mb-6">
-              <div className="text-xs font-mono uppercase tracking-wider text-teal-400 flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Instant Business Scan
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                Investigate Your Business Visibility
-              </h3>
-              <p className="text-sm sm:text-base text-zinc-400 max-w-2xl">
-                Enter your business details and we&apos;ll show you how easy your business is to find, understand, trust, and choose.
-              </p>
-            </div>
-
-            {error && (
-              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm">
-                {error}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Business Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-zinc-400" />
-                  Business Name
-                </label>
-                <input
-                  id="businessName"
-                  type="text"
-                  required
-                  placeholder="e.g. Apex Roofing Co."
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  className="w-full px-4 h-[54px] rounded-xl bg-zinc-900/90 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/30 transition-all"
-                />
+          <div className="flex flex-col md:flex-row relative z-10">
+            {/* Left Column: Value Prop / Engine Look */}
+            <div className="md:w-5/12 p-8 md:p-12 bg-zinc-900/40 border-b md:border-b-0 md:border-r border-zinc-800/80 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-teal-500/10 blur-[60px] rounded-full pointer-events-none" />
+              
+              <div className="space-y-6 relative z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-widest text-teal-400 font-semibold bg-teal-500/10 border border-teal-500/20">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Instant Business Scan
+                </div>
+                
+                <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-[1.1]">
+                  Investigate Your Business Visibility
+                </h3>
+                
+                <p className="text-sm sm:text-base text-zinc-400 leading-relaxed font-medium">
+                  Enter your business details and we'll investigate the digital signals that help customers find, understand, trust, and choose your business.
+                </p>
               </div>
 
-              {/* Website URL */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-zinc-400" />
-                  Website URL <span className="text-zinc-500 font-normal">(Optional)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. apexroofing.com"
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                  className="w-full px-4 h-[54px] rounded-xl bg-zinc-900/90 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/30 transition-all"
-                />
-              </div>
-
-              {/* Industry */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-zinc-400" />
-                  Industry
-                </label>
-                <select
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                  className="w-full px-4 h-[54px] rounded-xl bg-zinc-900/90 border border-zinc-800 text-white text-sm focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/30 transition-all"
-                >
-                  <option value="Roofing">Roofing Companies</option>
-                  <option value="Construction">Construction Companies</option>
-                  <option value="Real Estate">Real Estate Companies</option>
-                  <option value="Contractors">General Contractors & Trades</option>
-                  <option value="Technology">Technology / SaaS Companies</option>
-                  <option value="Professional Services">Professional Services (Legal, Accounting)</option>
-                  <option value="Healthcare">Healthcare & Dental Practices</option>
-                  <option value="Restaurant">Restaurants & Hospitality</option>
-                  <option value="Local Business">Local Retail & Services</option>
-                  <option value="Other">Other Business</option>
-                </select>
-              </div>
-
-              {/* Location */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-zinc-400" />
-                  Location / City
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Accra, Ghana or Austin, TX"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-4 h-[54px] rounded-xl bg-zinc-900/90 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/30 transition-all"
-                />
+              <div className="pt-10 relative z-10">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs font-mono font-semibold text-zinc-500 tracking-widest uppercase">
+                  <span>Website</span> <span className="text-zinc-700">•</span>
+                  <span>Search</span> <span className="text-zinc-700">•</span>
+                  <span>Local</span> <span className="text-zinc-700">•</span>
+                  <span>Social</span> <span className="text-zinc-700">•</span>
+                  <span>Trust</span> <span className="text-zinc-700">•</span>
+                  <span>Content</span>
+                </div>
               </div>
             </div>
 
-            <div className="pt-2">
-              <button
-                type="submit"
-                className="w-full h-[56px] rounded-full bg-teal-500 hover:bg-teal-400 active:bg-teal-600 text-zinc-950 text-sm sm:text-base font-bold flex items-center justify-center gap-2 transition-all shadow-md group"
-              >
-                <span>Check My Business Free</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+            {/* Right Column: The Input Form */}
+            <div className="md:w-7/12 p-8 md:p-12 relative bg-[#0a0a0a]/50">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm mb-4 flex items-start gap-2">
+                    <span className="shrink-0 mt-0.5 text-rose-400">⚠</span>
+                    {error}
+                  </div>
+                )}
 
-              <p className="text-center text-xs text-zinc-500 mt-4">
-                No credit card required. Free report generated in ~10 seconds.
-              </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {/* Business Name */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="businessName" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Business Name</label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Building2 className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
+                      </div>
+                      <input
+                        id="businessName"
+                        type="text"
+                        required
+                        placeholder="e.g. Apex Roofing Co."
+                        value={businessName}
+                        onChange={(e) => setBusinessName(e.target.value)}
+                        className="w-full pl-12 pr-4 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 shadow-inner"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Website URL */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="websiteUrl" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Website URL <span className="text-zinc-600 font-normal">(Optional)</span></label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Globe className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
+                      </div>
+                      <input
+                        id="websiteUrl"
+                        type="text"
+                        placeholder="e.g. apexroofing.com"
+                        value={websiteUrl}
+                        onChange={(e) => setWebsiteUrl(e.target.value)}
+                        className="w-full pl-12 pr-4 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 shadow-inner"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Industry */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="industry" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Industry</label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Briefcase className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
+                      </div>
+                      <select
+                        id="industry"
+                        value={industry}
+                        onChange={(e) => setIndustry(e.target.value)}
+                        className="w-full pl-12 pr-10 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 appearance-none shadow-inner cursor-pointer"
+                      >
+                        <option value="Roofing">Roofing Companies</option>
+                        <option value="Construction">Construction Companies</option>
+                        <option value="Real Estate">Real Estate Companies</option>
+                        <option value="Contractors">General Contractors & Trades</option>
+                        <option value="Technology">Technology / SaaS Companies</option>
+                        <option value="Professional Services">Professional Services</option>
+                        <option value="Healthcare">Healthcare & Dental Practices</option>
+                        <option value="Restaurant">Restaurants & Hospitality</option>
+                        <option value="Local Business">Local Retail & Services</option>
+                        <option value="Other">Other Business</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="location" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Location</label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <MapPin className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
+                      </div>
+                      <input
+                        id="location"
+                        type="text"
+                        required
+                        placeholder="e.g. Austin, TX"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className="w-full pl-12 pr-4 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 shadow-inner"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-16 rounded-2xl bg-teal-500 hover:bg-teal-400 active:bg-teal-600 disabled:opacity-70 disabled:cursor-not-allowed text-teal-950 text-lg font-extrabold flex items-center justify-center gap-3 transition-all shadow-[0_0_30px_rgba(20,184,166,0.3)] hover:shadow-[0_0_40px_rgba(20,184,166,0.5)] group/btn relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
+                    <span className="relative z-10 tracking-tight">CHECK MY BUSINESS FREE</span>
+                    <ArrowRight className="w-6 h-6 relative z-10 group-hover/btn:translate-x-1.5 transition-transform" />
+                  </button>
+
+                  <div className="text-center mt-5">
+                    <p className="text-sm text-zinc-400">
+                      No credit card required. Start with a free business visibility snapshot.
+                    </p>
+                  </div>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </div>

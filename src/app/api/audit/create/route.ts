@@ -45,17 +45,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // 3. Kick off background processing
-    // In production, use BullMQ/Inngest. Here, we use a floating promise that runs in the Node.js background thread.
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin || "http://localhost:3000";
-    
-    // We intentionally don't await this fetch so the current request can return immediately
-    fetch(`${appUrl}/api/audit/worker`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ auditId: audit.id })
-    }).catch(err => console.error("Failed to kick off background worker", err));
-
+    // 3. Client will kick off the background processing to avoid Vercel serverless freezing
     return NextResponse.json({
       success: true,
       auditId: audit.id,

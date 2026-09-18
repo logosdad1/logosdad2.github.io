@@ -30,7 +30,7 @@ const TIERS: TierInfo[] = [
     name: "Visibility Snapshot",
     price: 0,
     label: "FREE",
-    promise: "See my score.",
+    promise: "See my score and basic findings.",
     unlockedFeatures: [
       "Overall Business Visibility Score (0–100)",
       "6 core dimension score meters",
@@ -52,7 +52,7 @@ const TIERS: TierInfo[] = [
     name: "Essential Intelligence",
     price: 10,
     label: "$10",
-    promise: "Understand my problems.",
+    promise: "Understand your biggest visibility gaps.",
     unlockedFeatures: [
       "Everything in Snapshot",
       "Full technical website clarity & UX breakdown",
@@ -78,7 +78,7 @@ const TIERS: TierInfo[] = [
     price: 25,
     label: "$25",
     badge: "MOST POPULAR",
-    promise: "Find my growth opportunities.",
+    promise: "Understand customer intent, opportunities and what to fix next.",
     unlockedFeatures: [
       "Everything in Essential ($10)",
       "Competitive & Market Context (Your site vs benchmarks)",
@@ -100,7 +100,7 @@ const TIERS: TierInfo[] = [
     price: 50,
     label: "$50",
     badge: "PREMIUM STRATEGIC",
-    promise: "Build my strategy.",
+    promise: "Go deeper into positioning, authority, content and long-term growth.",
     unlockedFeatures: [
       "Everything in Growth ($25)",
       "Deeper Discovery Questions (Simulated generative search evaluations)",
@@ -126,6 +126,7 @@ export default function IntelligenceDepthSlider({
 
   const activeTierIndex = TIERS.findIndex((t) => t.id === selectedTier);
   const activeTier = TIERS[activeTierIndex];
+  const isGrowthSelected = activeTier.id === "GROWTH";
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const idx = parseInt(e.target.value);
@@ -140,23 +141,25 @@ export default function IntelligenceDepthSlider({
   };
 
   return (
-    <div className={`rounded-2xl border border-zinc-800 bg-[#121212] p-6 sm:p-8 space-y-6 ${className}`}>
-      <div className="text-center space-y-1.5 max-w-xl mx-auto">
-        <div className="text-[11px] font-mono uppercase tracking-widest text-teal-400 font-semibold">
+    <div className={`rounded-3xl border border-zinc-800/80 bg-[#121212]/90 p-8 sm:p-12 space-y-12 shadow-2xl relative overflow-hidden ${className}`}>
+      {/* Decorative background glow for the slider section */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-teal-500/20 to-transparent" />
+      
+      <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-widest text-teal-400 font-semibold bg-teal-500/10 border border-teal-500/20">
           Progressive Intelligence Model
         </div>
-        <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-          HOW DEEP DO YOU WANT US TO GO?
+        <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          How Deep Should We Investigate?
         </h3>
-        <p className="text-xs text-zinc-400">
-          You are not buying more pages — you are choosing the depth of evidence, competitor insight, and strategic actionability.
+        <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
+          You are not buying additional pages. You are purchasing <strong className="text-zinc-200">depth of intelligence, evidence processing, and strategic actionability</strong>. Slide to explore what our AI can uncover.
         </p>
       </div>
 
       {/* Interactive Slider Track */}
-      <div className="max-w-2xl mx-auto pt-2 space-y-4">
-        <div className="relative px-2">
-          {/* Custom Track with 4 Notch Positions */}
+      <div className="max-w-4xl mx-auto pt-4 space-y-6">
+        <div className="relative px-4">
           <input
             type="range"
             min="0"
@@ -164,50 +167,64 @@ export default function IntelligenceDepthSlider({
             step="1"
             value={activeTierIndex}
             onChange={handleSliderChange}
-            className="w-full h-2.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-teal-500 focus:outline-none"
+            className="w-full h-3 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/20 transition-all"
           />
 
-          {/* Notch Labels */}
-          <div className="flex justify-between text-xs font-mono font-bold pt-3 select-none">
-            {TIERS.map((tier, idx) => (
-              <button
-                key={tier.id}
-                type="button"
-                onClick={() => handleTierClick(tier.id)}
-                className={`flex flex-col items-center transition-all ${
-                  activeTierIndex === idx
-                    ? "text-teal-400 scale-105"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                <span className="text-sm font-bold">{tier.label}</span>
-                <span className="text-[10px] font-normal tracking-tight hidden sm:inline text-zinc-400">
-                  {tier.id === "SNAPSHOT" ? "Snapshot" : tier.id === "ESSENTIAL" ? "Essential" : tier.id === "GROWTH" ? "Growth" : "Authority"}
-                </span>
-              </button>
-            ))}
+          <div className="flex justify-between text-xs font-mono font-bold pt-6 select-none relative z-10">
+            {TIERS.map((tier, idx) => {
+              const isSelected = activeTierIndex === idx;
+              return (
+                <button
+                  key={tier.id}
+                  type="button"
+                  onClick={() => handleTierClick(tier.id)}
+                  className={`flex flex-col items-center transition-all duration-300 ${
+                    isSelected
+                      ? "text-teal-400 scale-110 -translate-y-2"
+                      : "text-zinc-500 hover:text-zinc-300 hover:-translate-y-1"
+                  }`}
+                >
+                  <span className={`text-base sm:text-lg font-bold ${isSelected ? 'text-white' : ''}`}>{tier.label}</span>
+                  <span className={`text-[10px] sm:text-xs font-normal tracking-wide mt-1 ${isSelected ? 'text-teal-400 font-semibold' : 'text-zinc-500'}`}>
+                    {tier.id === "SNAPSHOT" ? "Snapshot" : tier.id === "ESSENTIAL" ? "Essential" : tier.id === "GROWTH" ? "Growth" : "Authority"}
+                  </span>
+                </button>
+              )
+            })}
           </div>
         </div>
 
         {/* Selected Tier Banner */}
-        <div className="p-5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-white">{activeTier.name}</span>
-              <span className="text-xs font-mono px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 border border-teal-500/30">
+        <div className={`mt-8 p-6 sm:p-8 rounded-2xl border transition-all duration-500 flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden ${
+          isGrowthSelected 
+            ? "bg-gradient-to-r from-teal-950/40 to-[#121212] border-teal-500/50 shadow-[0_0_40px_rgba(20,184,166,0.15)]" 
+            : "bg-zinc-900/50 border-zinc-700"
+        }`}>
+          {isGrowthSelected && (
+            <div className="absolute top-0 right-0 p-32 bg-teal-500/10 blur-[80px] pointer-events-none rounded-full" />
+          )}
+          
+          <div className="space-y-2 relative z-10">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`text-2xl font-bold ${isGrowthSelected ? 'text-white' : 'text-zinc-100'}`}>
+                {activeTier.name}
+              </span>
+              <span className={`text-sm font-mono px-3 py-1 rounded-full font-semibold ${
+                isGrowthSelected ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40' : 'bg-zinc-800 text-zinc-300'
+              }`}>
                 {activeTier.price === 0 ? "Free Scan" : `$${activeTier.price} One-Time`}
               </span>
               {activeTier.badge && (
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                <span className={`text-xs font-mono px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
                   activeTier.badge.includes("POPULAR")
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                    : "bg-teal-500/10 text-teal-300 border border-teal-500/30"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 animate-pulse"
+                    : "bg-purple-500/20 text-purple-300 border border-purple-500/40"
                 }`}>
                   {activeTier.badge}
                 </span>
               )}
             </div>
-            <p className="text-xs text-teal-300 italic">
+            <p className={`text-sm italic ${isGrowthSelected ? 'text-teal-200/80' : 'text-zinc-400'}`}>
               &ldquo;{activeTier.promise}&rdquo;
             </p>
           </div>
@@ -216,28 +233,30 @@ export default function IntelligenceDepthSlider({
             <button
               type="button"
               onClick={() => onSelectTier && onSelectTier(activeTier.id)}
-              className="py-2.5 px-5 rounded-full bg-teal-500 hover:bg-teal-400 text-zinc-950 text-xs font-semibold flex items-center justify-center gap-2 shrink-0 transition-all shadow-md"
+              className={`relative z-10 py-3.5 px-6 rounded-full text-sm font-bold flex items-center justify-center gap-2 shrink-0 transition-all shadow-xl group ${
+                isGrowthSelected
+                  ? "bg-teal-500 hover:bg-teal-400 text-teal-950 hover:shadow-[0_0_30px_rgba(20,184,166,0.5)]"
+                  : "bg-zinc-100 hover:bg-white text-zinc-950"
+              }`}
             >
-              <span>
-                {actionButtonLabel || "Unlock My Intelligence"}
-              </span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>{actionButtonLabel || "Unlock My Intelligence"}</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           )}
         </div>
 
         {/* Intelligence Unlocks Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-4">
           {/* Unlocked */}
-          <div className="p-4 rounded-xl bg-emerald-950/10 border border-emerald-900/30 space-y-2">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5" />
-              <span>Intelligence Unlocked at {activeTier.label}</span>
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#0c111d]/50 border border-teal-900/30 space-y-4">
+            <div className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-bold flex items-center gap-2 pb-2 border-b border-teal-900/30">
+              <Check className="w-4 h-4" />
+              <span>Intelligence Included ({activeTier.label})</span>
             </div>
-            <ul className="space-y-1.5 text-xs text-zinc-300">
+            <ul className="space-y-3 text-sm text-zinc-300">
               {activeTier.unlockedFeatures.map((feat, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                <li key={i} className="flex items-start gap-3 leading-relaxed">
+                  <span className="text-emerald-400 font-bold shrink-0 mt-0.5">✓</span>
                   <span>{feat}</span>
                 </li>
               ))}
@@ -245,24 +264,29 @@ export default function IntelligenceDepthSlider({
           </div>
 
           {/* Locked at this tier */}
-          <div className="p-4 rounded-xl bg-zinc-900/30 border border-zinc-800 space-y-2">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-bold flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Requires Higher Intelligence Depth</span>
+          <div className="p-6 sm:p-8 rounded-2xl bg-[#121212] border border-zinc-800/80 space-y-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-800/10 rounded-bl-full pointer-events-none" />
+            
+            <div className="text-xs font-mono uppercase tracking-widest text-zinc-500 font-bold flex items-center gap-2 pb-2 border-b border-zinc-800/80">
+              <Lock className="w-4 h-4" />
+              <span>Requires Higher Intelligence</span>
             </div>
             {activeTier.lockedFeatures.length > 0 ? (
-              <ul className="space-y-1.5 text-xs text-zinc-400">
+              <ul className="space-y-3 text-sm text-zinc-500">
                 {activeTier.lockedFeatures.map((feat, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-zinc-500 shrink-0">🔒</span>
-                    <span className="line-through text-zinc-400">{feat}</span>
+                  <li key={i} className="flex items-start gap-3 leading-relaxed">
+                    <span className="text-zinc-600 shrink-0 mt-0.5">🔒</span>
+                    <span className="line-through decoration-zinc-700/50">{feat}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-teal-300/80 pt-2 italic">
-                Maximum strategic depth unlocked! Includes simulated generative query evaluations and complete team execution roadmap.
-              </p>
+              <div className="h-full flex flex-col justify-center pb-8">
+                <Sparkles className="w-8 h-8 text-teal-500/40 mb-3" />
+                <p className="text-sm text-teal-300/80 leading-relaxed">
+                  You have unlocked maximum strategic depth. This includes full executive directives, simulated generative query evaluations, and complete developer handoff blueprints.
+                </p>
+              </div>
             )}
           </div>
         </div>

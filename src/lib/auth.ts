@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { cookies, headers } from "next/headers";
 import { prisma } from "./prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET || "omnisight_dev_secret_key_2026_secured";
+const JWT_SECRET = process.env.JWT_SECRET || "ordigit_dev_secret_key_2026_secured";
 
 export interface TokenPayload {
   userId: string;
@@ -35,7 +35,7 @@ export function verifyToken(token: string): TokenPayload | null {
 export async function getCurrentUser(): Promise<TokenPayload | null> {
   try {
     const cookieStore = cookies();
-    let token = cookieStore.get("omnisight_token")?.value;
+    let token = cookieStore.get("ordigit_token")?.value;
     if (!token) {
       const headerStore = headers();
       const authHeader = headerStore.get("authorization");

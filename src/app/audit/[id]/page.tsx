@@ -87,29 +87,39 @@ function AuditDetailContent() {
   if (audit.status !== "COMPLETED" && audit.status !== "FAILED") {
     const statusMessages: Record<string, string> = {
       "QUEUED": "In Queue...",
-      "DISCOVERING": "Investigating digital footprint (Web, Search, Local, Social)...",
+      "DISCOVERING": "Discovering your digital footprint...",
       "ANALYZING": "Running multi-agent intelligence analysis...",
-      "SCORING": "Calculating conversion and visibility scores...",
-      "PROCESSING": "Finalizing intelligence report..."
+      "SCORING": "Calculating visibility and intent metrics...",
+      "PROCESSING": "Finalizing ordigit report..."
     };
     
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-2xl bg-[#0c111d] border border-slate-800 text-center space-y-6">
-          <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto" />
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white">Generating Intelligence</h2>
-            <p className="text-xs text-slate-400">{statusMessages[audit.status] || "Processing..."}</p>
+        <div className="w-full max-w-xl mx-auto bg-[#121212]/90 border border-zinc-800/80 rounded-2xl p-10 shadow-2xl backdrop-blur-sm text-center relative overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+             <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500 rounded-full blur-[100px] animate-pulse" />
+             <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500 rounded-full blur-[100px] animate-pulse delay-700" />
           </div>
-          <div className="flex flex-col text-left space-y-3 pt-6 border-t border-slate-800 text-xs font-mono text-slate-400">
-            <div className={`flex items-center gap-2 ${audit.status !== 'QUEUED' ? 'text-emerald-400' : ''}`}>
-              <span>{audit.status !== 'QUEUED' ? '✓' : '●'}</span> Business identity resolved
+
+          <Loader2 className="w-12 h-12 text-teal-400 animate-spin mx-auto mb-6 relative z-10" />
+          
+          <div className="space-y-3 relative z-10 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">INVESTIGATING YOUR BUSINESS</h2>
+            <p className="text-sm font-mono text-teal-400">{statusMessages[audit.status] || "Connecting digital evidence..."}</p>
+          </div>
+          
+          <div className="flex flex-col text-left space-y-4 pt-8 border-t border-zinc-800 relative z-10">
+            <div className={`flex items-center gap-3 transition-all ${audit.status !== 'QUEUED' ? 'text-emerald-400' : 'text-zinc-600'}`}>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">{audit.status !== 'QUEUED' ? '✓' : '○'}</div> 
+              <span className="text-sm font-semibold tracking-wide">Business identity resolved</span>
             </div>
-            <div className={`flex items-center gap-2 ${['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status) ? 'text-emerald-400' : ''}`}>
-              <span>{['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status) ? '✓' : '●'}</span> Digital discovery complete
+            <div className={`flex items-center gap-3 transition-all ${['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status) ? 'text-emerald-400' : 'text-zinc-600'}`}>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">{['ANALYZING', 'SCORING', 'PROCESSING'].includes(audit.status) ? '✓' : '○'}</div> 
+              <span className="text-sm font-semibold tracking-wide">Digital evidence investigated</span>
             </div>
-            <div className={`flex items-center gap-2 ${['SCORING', 'PROCESSING'].includes(audit.status) ? 'text-emerald-400' : ''}`}>
-              <span>{['SCORING', 'PROCESSING'].includes(audit.status) ? '✓' : '●'}</span> Evidence analysis complete
+            <div className={`flex items-center gap-3 transition-all ${['SCORING', 'PROCESSING'].includes(audit.status) ? 'text-emerald-400' : 'text-zinc-600'}`}>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">{['SCORING', 'PROCESSING'].includes(audit.status) ? '✓' : '○'}</div> 
+              <span className="text-sm font-semibold tracking-wide">Customer intent understood</span>
             </div>
           </div>
         </div>

@@ -45,6 +45,9 @@ export class SerperSearchDiscoveryProvider implements DigitalDiscoveryProvider {
 
     const query = `${identity.primaryName} ${identity.location}`;
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
       const response = await fetch("https://google.serper.dev/search", {
         method: "POST",
         headers: {
@@ -52,7 +55,10 @@ export class SerperSearchDiscoveryProvider implements DigitalDiscoveryProvider {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ q: query, gl: "us" }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Serper API error: ${response.statusText}`);

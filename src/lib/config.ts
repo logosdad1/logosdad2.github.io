@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   aiProvider: "gemini",
   allowMockCheckout: true,
   freeReportLimitsPerIp: 10,
-  leadCaptureEmail: "hello@omnisight.agency",
+  leadCaptureEmail: "hello@ordigit.com",
 };
 
 export async function getSystemSettings(): Promise<SystemSettings> {

@@ -187,13 +187,13 @@ export async function runLocalPresenceAgent(context: AgentContext): Promise<Agen
       });
     }
   } else {
-    weaknesses.push("Could not discover an authoritative local business profile.");
+    weaknesses.push("NOT CONFIRMED: Could not discover an authoritative local business profile.");
     findings.push({
-      title: "MISSING LOCAL BUSINESS PROFILE",
-      whatWeFound: "We could not verify an active Google Business Profile or equivalent local directory listing.",
+      title: "LOCAL PROFILE NOT CONFIRMED",
+      whatWeFound: "INSUFFICIENT DATA: We could not verify an active Google Business Profile or equivalent local directory listing.",
       whyItMatters: "Local profiles are the #1 driver of 'near me' search traffic.",
-      businessImpact: "Significant loss of local foot traffic and service inquiries.",
-      recommendedAction: "Claim and optimize your Google Business Profile.",
+      businessImpact: "Potential loss of local foot traffic if a profile does not exist.",
+      recommendedAction: "Claim and optimize your Google Business Profile if you haven't already.",
       priority: "HIGH",
       source: "Local Presence Analysis",
       confidence: "OBSERVED"

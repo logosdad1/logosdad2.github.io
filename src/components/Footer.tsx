@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-center gap-2 text-white font-semibold">
               <Eye className="w-4 h-4 text-indigo-400" />
-              <span>Omnisight AI</span>
+              <span className="text-xl font-bold tracking-tight text-white lowercase">ordigit</span>
             </div>
             <p className="text-slate-400 leading-relaxed text-xs">
               AI-powered Business Visibility Intelligence. Understand how customers, search systems and AI-powered discovery may interpret your business — and know what to improve next.
@@ -80,7 +80,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400">
-          <div>© {new Date().getFullYear()} Omnisight AI. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} ordigit. All rights reserved.</div>
           <div className="flex items-center gap-6">
             <Link href="/#audit-form" className="hover:text-slate-200">
               Run Audit
