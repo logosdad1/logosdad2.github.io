@@ -164,7 +164,35 @@ export default function TeaserReport({
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-8 mt-8">
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-white tracking-tight px-2">WHAT WE FOUND</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+            {/* KEY STRENGTHS */}
+            <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center gap-2 text-emerald-400 text-sm font-bold uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4" /><span>Key Strengths</span>
+                </div>
+                {executiveSummary.keyFindings.filter(f => f.type === "STRENGTH").length > 0 && (
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{executiveSummary.keyFindings.filter(f => f.type === "STRENGTH").length} Identified</span>
+                )}
+              </div>
+              <ul className="space-y-4">
+                {executiveSummary.keyFindings.filter(f => f.type === "STRENGTH").length > 0 ? (
+                  executiveSummary.keyFindings.filter(f => f.type === "STRENGTH").slice(0, 3).map((finding, idx) => (
+                    <li key={idx} className="flex flex-col gap-1.5 p-3 rounded-lg bg-zinc-950 border border-zinc-800">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-emerald-500 font-bold shrink-0 leading-none text-xs">✓</span>
+                        <span className="text-xs font-bold text-white tracking-wider">{finding.title}</span>
+                      </div>
+                      <p className="text-xs text-zinc-400"><strong className="text-zinc-300">Evidence:</strong> {finding.whatWeFound}</p>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-xs text-zinc-500 font-mono py-2">NO SIGNIFICANT STRENGTHS DETECTED</li>
+                )}
+              </ul>
+            </div>
+
+            {/* KEY WEAKNESSES */}
             <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div className="flex items-center gap-2 text-rose-400 text-sm font-bold uppercase tracking-wider">
@@ -192,6 +220,7 @@ export default function TeaserReport({
               </ul>
             </div>
             
+            {/* KEY OPPORTUNITIES */}
             <div className="p-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/40 space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div className="flex items-center gap-2 text-indigo-400 text-sm font-bold uppercase tracking-wider">
@@ -243,17 +272,16 @@ export default function TeaserReport({
               {[
                 { title: "CUSTOMER INTENT INTELLIGENCE", desc: "Understand what potential customers are trying to discover, evaluate, compare and act on.", tier: "Growth Intelligence" },
                 { title: "CONTENT OPPORTUNITY MAP", desc: "Discover customer questions and content gaps surrounding your business.", tier: "Growth Intelligence" },
+                { title: "COMPETITIVE VISIBILITY CONTEXT", desc: "Understand relevant visibility context around similar businesses where sufficient evidence exists.", tier: "Growth Intelligence" },
                 { title: "PRIORITY ACTION PLAN", desc: "Know what to fix first based on impact and effort.", tier: "Growth Intelligence" },
                 { title: "AI VISIBILITY DEEP DIVE", desc: "Understand how clearly your business information can be interpreted by modern discovery systems.", tier: "Authority Intelligence" }
               ].map((item, idx) => (
                 <div key={idx} className="flex flex-col p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-white tracking-wider">{item.title}</h4>
+                    <h4 className="text-sm font-bold text-white tracking-wide">{item.title}</h4>
                   </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed flex-1">{item.desc}</p>
-                  <div className="pt-2 mt-auto border-t border-zinc-800/60">
-                    <span className="text-[10px] font-mono font-medium text-teal-400">Available in {item.tier}</span>
-                  </div>
+                  <p className="text-xs text-zinc-400 leading-relaxed">{item.desc}</p>
+                  <p className="text-[10px] font-mono text-zinc-500 uppercase pt-2 border-t border-zinc-800">Available in {item.tier}</p>
                 </div>
               ))}
             </div>

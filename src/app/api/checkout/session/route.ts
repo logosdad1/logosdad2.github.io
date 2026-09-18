@@ -13,36 +13,41 @@ export async function POST(req: NextRequest) {
 
     const user = await getCurrentUser();
     if (user) {
-      // Find the audit first to see if it needs a business
-      const audit = await prisma.audit.findUnique({
-        where: { id: auditId }
-      });
+      // Verify user actually exists in DB to prevent foreign key errors from stale cookies
+      const dbUser = await prisma.user.findUnique({ where: { id: user.userId } });
       
-      if (audit && !audit.userId) {
-        let businessId = audit.businessId;
-        
-        // If the audit was created anonymously, it might not have a business attached
-        if (!businessId) {
-          const business = await prisma.business.create({
-            data: {
-              userId: user.userId,
-              name: audit.businessName,
-              websiteUrl: audit.url,
-              industry: audit.industry,
-              location: audit.location,
-            }
-          });
-          businessId = business.id;
-        }
-        
-        // Claim the audit for the logged-in user
-        await prisma.audit.update({
-          where: { id: auditId },
-          data: { 
-            userId: user.userId,
-            businessId: businessId
-          },
+      if (dbUser) {
+        // Find the audit first to see if it needs a business
+        const audit = await prisma.audit.findUnique({
+          where: { id: auditId }
         });
+        
+        if (audit && !audit.userId) {
+          let businessId = audit.businessId;
+          
+          // If the audit was created anonymously, it might not have a business attached
+          if (!businessId) {
+            const business = await prisma.business.create({
+              data: {
+                userId: dbUser.id,
+                name: audit.businessName,
+                websiteUrl: audit.url,
+                industry: audit.industry,
+                location: audit.location,
+              }
+            });
+            businessId = business.id;
+          }
+          
+          // Claim the audit for the logged-in user
+          await prisma.audit.update({
+            where: { id: auditId },
+            data: { 
+              userId: dbUser.id,
+              businessId: businessId
+            },
+          });
+        }
       }
     }
 
