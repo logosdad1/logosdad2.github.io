@@ -43,7 +43,7 @@ export class SerperSearchDiscoveryProvider implements DigitalDiscoveryProvider {
       return [];
     }
 
-    const query = `${identity.primaryName} ${identity.location}`;
+    const query = `${identity.name} ${identity.location}`;
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
@@ -75,7 +75,7 @@ export class SerperSearchDiscoveryProvider implements DigitalDiscoveryProvider {
           sourceUrl: data.knowledgeGraph.website || "google.com",
           sourceName: "Google Knowledge Graph",
           evidenceType: "VERIFIED_ENTITY",
-          observedValue: data.knowledgeGraph.title || identity.primaryName,
+          observedValue: data.knowledgeGraph.title || identity.name,
           confidence: "VERIFIED",
           collectedAt: new Date(),
         });
@@ -84,7 +84,7 @@ export class SerperSearchDiscoveryProvider implements DigitalDiscoveryProvider {
       // 2. Check their organic ranking for their own brand name
       if (data.organic && data.organic.length > 0) {
         const topResult = data.organic[0];
-        const isFirst = topResult.title.toLowerCase().includes(identity.primaryName.toLowerCase()) || 
+        const isFirst = topResult.title.toLowerCase().includes(identity.name.toLowerCase()) || 
                        (identity.website && topResult.link.includes(new URL(identity.website).hostname.replace('www.', '')));
         
         if (isFirst) {
