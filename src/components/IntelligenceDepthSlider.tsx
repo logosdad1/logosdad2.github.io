@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { IntelligenceTier } from "@/lib/types";
-import { Check, Lock, Sparkles, ArrowRight, ShieldCheck, Zap, TrendingUp, Layers, HelpCircle, FileText } from "lucide-react";
+import { Check, Lock, Sparkles, ArrowRight } from "lucide-react";
 
 interface IntelligenceDepthSliderProps {
   currentTier?: IntelligenceTier;

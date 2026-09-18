@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Globe, Building2, MapPin, Briefcase, Loader2, Sparkles, CheckCircle2, Search, Activity } from "lucide-react";
+import { Globe, Building2, MapPin, Briefcase, Sparkles, Activity } from "lucide-react";
 
 interface AuditFormProps {
   defaultIndustry?: string;

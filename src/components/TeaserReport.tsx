@@ -5,8 +5,7 @@ import ScoreGauge from "./ScoreGauge";
 import IntelligenceDepthSlider from "./IntelligenceDepthSlider";
 import { AuditReportDataPayload, IntelligenceTier } from "@/lib/types";
 import {
-  CheckCircle2, AlertTriangle, XCircle, ShieldCheck,
-  Zap, Layers, Search, Users, TrendingUp, Lock, ArrowRight, Sparkles
+  CheckCircle2, AlertTriangle, TrendingUp, Lock, ArrowRight, Sparkles
 } from "lucide-react";
 
 interface TeaserReportProps {
