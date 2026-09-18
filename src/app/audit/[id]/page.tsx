@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import TeaserReport from "@/components/TeaserReport";
 import FullReportView from "@/components/FullReportView";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 function AuditDetailContent() {
