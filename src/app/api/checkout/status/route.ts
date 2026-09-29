@@ -33,11 +33,11 @@ export async function GET(req: NextRequest) {
         where: { id: payment.auditId },
         data: { status: "COMPLETED" }
       });
-      return NextResponse.json({ status: "COMPLETED", auditId: payment.auditId });
+      return NextResponse.json({ status: "COMPLETED", auditId: payment.auditId, tier: payment.tier });
     }
 
     if (payment.audit.status === "COMPLETED") {
-      return NextResponse.json({ status: "COMPLETED", auditId: payment.auditId });
+      return NextResponse.json({ status: "COMPLETED", auditId: payment.auditId, tier: payment.tier });
     }
 
     return NextResponse.json({ status: payment.audit.status });

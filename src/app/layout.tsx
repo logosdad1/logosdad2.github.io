@@ -12,6 +12,8 @@ export const metadata: Metadata = {
     "Business Visibility Intelligence. Discover how AI, search, and maps understand your business.",
 };
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 export default function RootLayout({
   children,
 }: {
@@ -20,9 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark scroll-smooth ${inter.className}`}>
       <body className="min-h-screen flex flex-col bg-[#0A0A0A] text-zinc-100 antialiased selection:bg-teal-500/30 selection:text-teal-200">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "mock-client-id"}>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

@@ -33,6 +33,8 @@ function SuccessContent() {
           setAuditId(data.auditId);
           setStatus("completed");
           clearInterval(interval);
+          // Automatically redirect to the intelligence report
+          window.location.href = `/audit/${data.auditId}?unlocked=true&tier=${data.tier || ''}`;
         } else if (data.status === "PROCESSING") {
           setStatus("processing");
           // Continue polling
@@ -88,16 +90,10 @@ function SuccessContent() {
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-semibold text-white uppercase tracking-wider">Intelligence Ready</h2>
-              <p className="text-sm text-slate-300">Your deep business visibility report has been successfully generated.</p>
+              <p className="text-sm text-slate-300">Redirecting to your unlocked intelligence...</p>
             </div>
             
-            <Link 
-              href={`/audit/${auditId}`}
-              className="w-full py-3 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-md"
-            >
-              <span>View My Report</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <Loader2 className="w-6 h-6 text-indigo-400 animate-spin mx-auto" />
           </div>
         )}
 

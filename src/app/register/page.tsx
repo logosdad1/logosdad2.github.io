@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, ArrowRight, Lock, Mail, User, Loader2 } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 
 function RegisterForm() {
   const router = useRouter();
@@ -66,13 +67,13 @@ function RegisterForm() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 mx-auto flex items-center justify-center">
-            <Eye className="w-5 h-5" />
+            {action === "checkout" ? <Lock className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Create an Account
+            {action === "checkout" ? (tier ? `Create an Account to Unlock ${tier.charAt(0) + tier.slice(1).toLowerCase()} Intelligence` : "Create an Account to Unlock Intelligence") : "Create an Account"}
           </h1>
           <p className="text-xs text-slate-400">
-            Save audits, track score changes, and access client reports.
+            {action === "checkout" ? "Secure your report and continue to payment." : "Save audits, track score changes, and access client reports."}
           </p>
         </div>
 
@@ -144,6 +145,59 @@ function RegisterForm() {
               )}
             </button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-800"></div>
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-mono">
+              <span className="bg-[#0c111d] px-2 text-slate-500">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center w-full">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                setLoading(true);
+                try {
+                  const res = await fetch("/api/auth/google", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ credential: credentialResponse.credential })
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    if (action === "checkout" && auditId && tier) {
+                      const checkoutRes = await fetch("/api/checkout/session", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ auditId, tier }),
+                      });
+                      const checkoutData = await checkoutRes.json();
+                      if (checkoutData.checkoutUrl) {
+                        window.location.href = checkoutData.checkoutUrl;
+                        return;
+                      }
+                    }
+                    router.push("/dashboard");
+                    router.refresh();
+                  } else {
+                    setError(data.error || "Google sign-up failed");
+                    setLoading(false);
+                  }
+                } catch(err) {
+                  setError("Google Login failed");
+                  setLoading(false);
+                }
+              }}
+              onError={() => {
+                setError("Google Login failed");
+              }}
+              useOneTap
+              shape="rectangular"
+              theme="filled_black"
+            />
+          </div>
 
           <div className="text-center text-xs text-slate-400 pt-2">
             Already have an account?{" "}

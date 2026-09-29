@@ -78,7 +78,7 @@ export async function createCheckoutSession(
       ],
       mode: "payment",
       success_url: `${returnUrlBase}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${returnUrlBase}/audit/${auditId}?canceled=true`,
+      cancel_url: `${returnUrlBase}/audit/${auditId}?canceled=true&tier=${targetTier}`,
       metadata: {
         auditId: audit.id,
         businessId: audit.businessId || "",
@@ -97,7 +97,7 @@ export async function createCheckoutSession(
 
   // Otherwise, return direct mock unlock endpoint
   return {
-    checkoutUrl: `${returnUrlBase}/api/checkout/mock?auditId=${audit.id}&tier=${targetTier}&redirect=/dashboard`,
+    checkoutUrl: `${returnUrlBase}/api/checkout/mock?auditId=${audit.id}&tier=${targetTier}`,
     isMock: true,
     finalPrice,
     isUpgrade,

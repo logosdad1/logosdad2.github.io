@@ -29,6 +29,11 @@ function AuditDetailContent() {
         const resData = await res.json();
         
         if (isSubscribed) {
+          // If the very first load is already completed, skip the transition animation
+          if (loading && (resData.audit?.status === "COMPLETED" || resData.audit?.status === "FAILED")) {
+            setTransitionStage("RESULT");
+          }
+
           setData(resData);
           setLoading(false);
           
@@ -61,24 +66,15 @@ function AuditDetailContent() {
 
   useEffect(() => {
     if (data?.audit?.status === "COMPLETED" && !transitionStage) {
-      // Start the transition sequence
-      setTransitionStage("DISCOVERED");
-      setTimeout(() => setTransitionStage("INTERPRETED"), 600);
-      setTimeout(() => setTransitionStage("PRIORITIZED"), 1200);
-      setTimeout(() => setTransitionStage("RESULT"), 1800);
+      // Show brief completion state before transitioning
+      setTransitionStage("COMPLETE");
+      setTimeout(() => setTransitionStage("RESULT"), 2000); // Wait 2 seconds to show "Investigation complete"
     }
   }, [data?.audit?.status]);
 
-  if (loading) { 
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-teal-400"/>
-        <p className="text-xs font-mono text-slate-400">Connecting to ordigit engine...</p>
-      </div>
-    ); 
-  }
-  
-  if (error || !data?.audit) { 
+  const businessName = data?.audit?.businessName || searchParams.get("name") || "your business";
+
+  if (error || (!data?.audit && !loading)) { 
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full p-6 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-center space-y-4">
@@ -93,72 +89,132 @@ function AuditDetailContent() {
     ); 
   }
 
-  const { audit, reportData, tierPrices } = data;
-  const currentTier = audit.tier || "SNAPSHOT";
+  // Show specific loading states to avoid flashing the scanner UI
+  if (loading) {
+    if (isJustUnlocked) {
+      return (
+        <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-500">
+          <Loader2 className="w-10 h-10 animate-spin text-emerald-400"/>
+          <div className="space-y-2 text-center">
+            <p className="text-sm font-mono text-emerald-400 uppercase tracking-widest font-bold">Unlocking Intelligence</p>
+            <p className="text-xs text-zinc-500">Applying your new access level...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    // If they didn't just submit a new scan (no name param), show a plain spinner
+    if (!searchParams.has("name")) {
+      return (
+        <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-500">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-400"/>
+          <p className="text-xs font-mono text-slate-400">Loading Business Intelligence Report...</p>
+        </div>
+      );
+    }
+  }
 
-  // Phase 3 Asynchronous Progress UI & Transition
-  if (audit.status !== "COMPLETED" || (transitionStage && transitionStage !== "RESULT")) {
-    const isTransitioning = transitionStage !== null;
-    const currentStatus = isTransitioning ? transitionStage : audit.status;
+  // Handle both backend processing and new scan loading with the same UI
+  if ((loading && searchParams.has("name")) || (data?.audit && data.audit.status !== "COMPLETED") || (transitionStage && transitionStage !== "RESULT")) {
+    const status = data?.audit?.status || 'QUEUED'; // Default to QUEUED if loading
+    const isTransitioning = transitionStage === "COMPLETE";
     
     // Determine step status based on backend audit status
-    const isDone = (statuses: string[]) => statuses.includes(audit.status) || isTransitioning;
-    const isActive = (status: string) => audit.status === status && !isTransitioning;
+    const isDone = (statuses: string[]) => statuses.includes(status) || isTransitioning;
+    const isActive = (s: string) => status === s && !isTransitioning;
 
     const steps = [
-      { label: "Identifying the business", done: isDone(['DISCOVERING', 'ANALYZING', 'SCORING', 'PROCESSING']), active: isActive('QUEUED') },
-      { label: "Checking business and website clarity", done: isDone(['ANALYZING', 'SCORING', 'PROCESSING']), active: isActive('DISCOVERING') },
-      { label: "Investigating search and local visibility", done: isDone(['ANALYZING', 'SCORING', 'PROCESSING']), active: isActive('DISCOVERING') },
-      { label: "Connecting public trust signals", done: isDone(['SCORING', 'PROCESSING']), active: isActive('ANALYZING') },
-      { label: "Analyzing customer discovery opportunities", done: isDone(['SCORING', 'PROCESSING']), active: isActive('ANALYZING') },
-      { label: "Building visibility intelligence", done: isDone(['PROCESSING']), active: isActive('SCORING') || isActive('PROCESSING') }
+      { 
+        label: "Identifying the business", 
+        done: isDone(['DISCOVERING', 'ANALYZING', 'SCORING', 'PROCESSING']), 
+        active: isActive('QUEUED'),
+        evidence: isDone(['DISCOVERING', 'ANALYZING', 'SCORING', 'PROCESSING']) ? "Business identity established" : undefined
+      },
+      { 
+        label: "Checking business & website clarity", 
+        done: isDone(['ANALYZING', 'SCORING', 'PROCESSING']), 
+        active: isActive('DISCOVERING'),
+        evidence: isDone(['ANALYZING', 'SCORING', 'PROCESSING']) ? (data?.audit?.url ? "Website detected" : "Analyzing footprint") : undefined
+      },
+      { 
+        label: "Investigating search & local visibility", 
+        done: isDone(['ANALYZING', 'SCORING', 'PROCESSING']), 
+        active: isActive('DISCOVERING'),
+        evidence: isActive('DISCOVERING') ? "Looking for public local business signals..." : undefined
+      },
+      { 
+        label: "Checking public trust signals", 
+        done: isDone(['SCORING', 'PROCESSING']), 
+        active: isActive('ANALYZING') 
+      },
+      { 
+        label: "Analyzing customer discovery opportunities", 
+        done: isDone(['SCORING', 'PROCESSING']), 
+        active: isActive('ANALYZING') 
+      },
+      { 
+        label: "Connecting the evidence", 
+        done: isDone(['PROCESSING']), 
+        active: isActive('SCORING') || isActive('PROCESSING') 
+      }
     ];
     
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-xl mx-auto bg-[#121212]/90 border border-zinc-800/80 rounded-2xl p-10 shadow-2xl backdrop-blur-sm relative overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-             <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500 rounded-full blur-[100px] animate-pulse" />
-             <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500 rounded-full blur-[100px] animate-pulse delay-700" />
-          </div>
-
           <div className="text-center relative z-10 mb-8 space-y-4">
             {isTransitioning ? (
-              <div className="h-12 flex items-center justify-center">
-                <span className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400 tracking-widest uppercase animate-pulse">
-                  {transitionStage}
-                </span>
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-2 text-2xl sm:text-3xl font-light text-white tracking-tight">
+                  <span className="text-emerald-400 font-bold">✓</span>
+                  <span>Investigation complete</span>
+                </div>
+                <p className="text-zinc-400 text-lg">ordigit connected the available evidence.</p>
               </div>
             ) : (
               <>
-                <Loader2 className="w-8 h-8 text-teal-400 animate-spin mx-auto mb-4" />
                 <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-                  <span className="font-bold">ordigit</span> is investigating <span className="font-bold text-teal-400">{audit.businessName}</span>
+                  <span className="font-bold">ordigit</span> is investigating
                 </h2>
+                <div className="text-xl sm:text-2xl font-bold text-teal-400 uppercase tracking-wide">
+                  {businessName}
+                </div>
               </>
             )}
           </div>
           
-          <div className="flex flex-col gap-y-4 pt-6 relative z-10 max-w-md mx-auto">
-            {steps.map((step, idx) => (
-              <div key={idx} className={`flex items-center gap-3 transition-all duration-300 ${step.done ? 'text-emerald-400' : step.active ? 'text-teal-400' : 'text-zinc-600 opacity-50'}`}>
-                <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                  {step.done ? (
-                    <span className="font-bold">✓</span>
-                  ) : step.active ? (
-                    <span className="animate-pulse font-bold">→</span>
-                  ) : (
-                    <span className="text-zinc-700 font-bold">·</span>
+          {!isTransitioning && (
+            <div className="flex flex-col gap-y-5 pt-6 relative z-10 max-w-md mx-auto">
+              {steps.map((step, idx) => (
+                <div key={idx} className="flex flex-col">
+                  <div className={`flex items-center gap-3 transition-all duration-300 ${step.done ? 'text-zinc-500' : step.active ? 'text-teal-400 font-medium' : 'text-zinc-600 opacity-50'}`}>
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                      {step.done ? (
+                        <span className="font-bold">✓</span>
+                      ) : step.active ? (
+                        <span className="animate-pulse font-bold">→</span>
+                      ) : (
+                        <span className="font-bold">○</span>
+                      )}
+                    </div> 
+                    <span className="text-base tracking-wide">{step.label}</span>
+                  </div>
+                  {(step.evidence) && (
+                    <div className="pl-8 text-sm text-zinc-500 mt-1">
+                      {step.evidence}
+                    </div>
                   )}
-                </div> 
-                <span className={`text-base tracking-wide ${step.done || step.active ? 'font-medium' : ''}`}>{step.label}</span>
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
   }
+
+  const { audit, reportData, tierPrices } = data;
+  const currentTier = audit.tier || "SNAPSHOT";
 
   if (audit.status === "FAILED") {
     return (
@@ -186,6 +242,8 @@ function AuditDetailContent() {
           reportData={reportData}
           tier={currentTier}
           tierPrices={tierPrices}
+          isJustUnlocked={isJustUnlocked}
+          unlockedTier={searchParams.get("tier") || currentTier}
         />
       ) : (
         <TeaserReport

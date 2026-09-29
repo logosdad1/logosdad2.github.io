@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import ScoreGauge from "./ScoreGauge";
 import IntelligenceDepthSlider from "./IntelligenceDepthSlider";
 import { AuditReportDataPayload, IntelligenceTier } from "@/lib/types";
@@ -29,12 +30,20 @@ export default function TeaserReport({
   reportData,
   tierPrices = { essential: 10, growth: 25, authority: 50 },
 }: TeaserReportProps) {
+  const searchParams = useSearchParams();
+  const isCanceled = searchParams.get("canceled") === "true";
+  
   const [unlocking, setUnlocking] = useState(false);
-  const [showLocked, setShowLocked] = useState(false);
+  const [showLocked, setShowLocked] = useState(isCanceled); // automatically show locked view if they were checking out
   const [revealStage, setRevealStage] = useState(0);
 
   // Progressive Reveal Effect
   useEffect(() => {
+    // If canceled, skip the progressive reveal so they immediately see the result
+    if (isCanceled) {
+      setRevealStage(3);
+      return;
+    }
     const timer1 = setTimeout(() => setRevealStage(1), 1000); // Intro -> Score
     const timer2 = setTimeout(() => setRevealStage(2), 2500); // Score -> Details
     const timer3 = setTimeout(() => setRevealStage(3), 3500); // Details -> Findings
@@ -43,7 +52,7 @@ export default function TeaserReport({
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, []);
+  }, [isCanceled]);
 
   const handleUnlock = async (tier: IntelligenceTier) => {
     if (tier === "SNAPSHOT") return;
@@ -108,6 +117,12 @@ export default function TeaserReport({
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
+      {isCanceled && (
+        <div className="p-4 sm:p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500 text-amber-400 text-center">
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+          <p className="text-sm font-medium">Your checkout was cancelled. Your intelligence is still available at its current level.</p>
+        </div>
+      )}
       {/* Stage 1 & 2: Score Reveal */}
       <div className="rounded-3xl border border-zinc-800 bg-[#121212]/90 p-8 sm:p-10 backdrop-blur-sm shadow-xl relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
         {/* Background glow tied to score (subtle) */}
@@ -267,10 +282,20 @@ export default function TeaserReport({
           <div className="space-y-3 pt-4">
             <IntelligenceDepthSlider
               currentTier="SNAPSHOT"
-              initialSelectedTier="GROWTH"
+              initialSelectedTier={(searchParams.get("tier") as IntelligenceTier) || "GROWTH"}
               onSelectTier={handleUnlock}
               showActionButton={true}
-              actionButtonLabel={unlocking ? "Redirecting to checkout..." : "Unlock My Intelligence"}
+              actionButtonLabel={
+                unlocking 
+                  ? "Redirecting to checkout..." 
+                  : (isCanceled 
+                      ? (() => {
+                          const t = (searchParams.get("tier") || "GROWTH").toLowerCase() as keyof typeof tierPrices;
+                          const price = tierPrices[t] || 25;
+                          return `CONTINUE WITH ${t.toUpperCase()} — $${price}`;
+                        })()
+                      : "Unlock My Intelligence")
+              }
             />
             <p className="text-center text-[11px] text-zinc-500">
               One-time payment &middot; Lifetime access &middot; Actionable roadmap included

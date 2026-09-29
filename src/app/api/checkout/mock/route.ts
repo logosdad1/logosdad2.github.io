@@ -21,6 +21,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
   
-  const dashboardUrl = new URL(`/dashboard?unlocked=true&auditId=${auditId}&tier=${tier}`, req.url);
-  return NextResponse.redirect(dashboardUrl);
+  const auditUrl = new URL(`/audit/${auditId}?unlocked=true&tier=${tier}`, req.url);
+  return NextResponse.redirect(auditUrl);
 }

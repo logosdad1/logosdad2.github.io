@@ -1,13 +1,17 @@
 "use client";
 console.log("HMR trigger");
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import ScoreGauge from "./ScoreGauge";
 import { AuditReportDataPayload, IntelligenceTier } from "@/lib/types";
-import { Printer,Copy,Check,ShieldCheck,Zap,Layers,Search,Users,TrendingUp,AlertCircle,CheckCircle2,Send,Sparkles,ArrowRight,Lock,Target,Calendar,BarChart2,Map } from "lucide-react";
+import { Printer,Copy,Check,ShieldCheck,Zap,Layers,Search,Users,TrendingUp,AlertCircle,CheckCircle2,Send,Sparkles,ArrowRight,Lock,Target,Calendar,BarChart2,Map,AlertTriangle } from "lucide-react";
 
-interface FullReportViewProps { auditId:string; businessName:string; url:string; industry:string; location:string; overallScore:number; reportData:AuditReportDataPayload; tier?:IntelligenceTier; tierPrices?:{essential:number;growth:number;authority:number}; }
+interface FullReportViewProps { auditId:string; businessName:string; url:string; industry:string; location:string; overallScore:number; reportData:AuditReportDataPayload; tier?:IntelligenceTier; tierPrices?:{essential:number;growth:number;authority:number}; isJustUnlocked?: boolean; unlockedTier?: string; }
 
-export default function FullReportView({ auditId,businessName,url,industry,location,overallScore,reportData, tier="ESSENTIAL", tierPrices }: FullReportViewProps) {
+export default function FullReportView({ auditId,businessName,url,industry,location,overallScore,reportData, tier="ESSENTIAL", tierPrices, isJustUnlocked, unlockedTier }: FullReportViewProps) {
+  const searchParams = useSearchParams();
+  const isCanceled = searchParams.get("canceled") === "true";
+  
   const tp = tierPrices || {essential:10,growth:25,authority:50};
   const [activeTab,setActiveTab]=useState<string>("executive");
   const [planFilter,setPlanFilter]=useState<"ALL"|"FIX_NOW"|"FIX_NEXT"|"OPTIMIZE_LATER">("ALL");
@@ -79,7 +83,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
              Unlock the next level of investigation to reveal the complete picture.
            </div>
            <button onClick={() => handleUpgrade(targetTier)} disabled={upgrading} className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-             <span>{upgrading ? "Redirecting..." : `Unlock ${targetTier.charAt(0) + targetTier.slice(1).toLowerCase()} — $${price}`}</span>
+             <span>{upgrading ? "Redirecting..." : (isCanceled && searchParams.get("tier") === targetTier ? `CONTINUE WITH ${targetTier.toUpperCase()} — $${price}` : `Unlock ${targetTier.charAt(0) + targetTier.slice(1).toLowerCase()} — $${price}`)}</span>
              <ArrowRight className="w-4 h-4"/>
            </button>
         </div>
@@ -88,6 +92,20 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
   };
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-16">
+      {isJustUnlocked && (
+        <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500 mb-8">
+          <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+          <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 uppercase tracking-widest">
+            {unlockedTier || tier} INTELLIGENCE UNLOCKED
+          </h2>
+        </div>
+      )}
+      {isCanceled && (
+        <div className="p-4 sm:p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500 text-amber-400 text-center mb-8">
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+          <p className="text-sm font-medium">Your checkout was cancelled. Your intelligence is still available at its current level.</p>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print"><div className="flex items-center gap-3"><div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"><CheckCircle2 className="w-3.5 h-3.5"/><span>Full Unlocked Report &bull; Investigation: {auditId.slice(0,10)}</span></div><span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{tier} TIER</span></div><button onClick={handlePrint} className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-colors"><Printer className="w-3.5 h-3.5"/><span>Download / Print PDF</span></button></div>
       <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print"><div className="flex flex-col md:flex-row items-center justify-between gap-8"><div className="space-y-3 text-center md:text-left flex-1"><div className="text-xs font-mono uppercase tracking-wider text-indigo-400">Business Visibility Intelligence Report &bull; {tier} Tier</div><h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{businessName}</h1><div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 font-mono"><span>{url || "No Website Provided"}</span><span>&bull;</span><span>{industry}</span><span>&bull;</span><span>{location}</span></div><blockquote className="text-sm text-slate-300 italic border-l-2 border-indigo-500 pl-3 mt-2">&ldquo;{executiveSummary.visibilityStatement}&rdquo;</blockquote></div><div className="shrink-0 flex flex-col items-center p-6 rounded-2xl bg-slate-900/80 border border-slate-800 card-print"><span className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Overall Score</span><ScoreGauge score={overallScore} size={150}/></div></div></div>
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-800 no-print">{allTabs.map(tab=>(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${activeTab===tab.id?"bg-indigo-600 text-white shadow-sm":"text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"}`}>{tab.label}</button>))}</div>

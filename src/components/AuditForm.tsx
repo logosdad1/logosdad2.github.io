@@ -53,12 +53,80 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
         body: JSON.stringify({ auditId: data.auditId })
       }).catch(console.error);
 
-      router.push(`/audit/${data.auditId}`);
+      router.push(`/audit/${data.auditId}?name=${encodeURIComponent(businessName.trim())}`);
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className={`w-full max-w-5xl mx-auto ${className}`} id="audit-form">
+        <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl shadow-2xl relative overflow-hidden group min-h-[500px] flex items-center justify-center">
+          <div className="w-full max-w-xl mx-auto p-10 text-center relative z-10 space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
+              <span className="font-bold">ordigit</span> is investigating
+            </h2>
+            <div className="text-xl sm:text-2xl font-bold text-teal-400 uppercase tracking-wide">
+              {businessName || "your business"}
+            </div>
+            
+            <div className="flex flex-col gap-y-5 pt-6 relative z-10 max-w-md mx-auto">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 text-teal-400 font-medium transition-all duration-300">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="animate-pulse font-bold">→</span>
+                  </div>
+                  <span className="text-base tracking-wide">Identifying the business</span>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="font-bold">○</span>
+                  </div>
+                  <span className="text-base tracking-wide">Checking business & website clarity</span>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="font-bold">○</span>
+                  </div>
+                  <span className="text-base tracking-wide">Investigating search & local visibility</span>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="font-bold">○</span>
+                  </div>
+                  <span className="text-base tracking-wide">Checking public trust signals</span>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="font-bold">○</span>
+                  </div>
+                  <span className="text-base tracking-wide">Analyzing customer discovery opportunities</span>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="font-bold">○</span>
+                  </div>
+                  <span className="text-base tracking-wide">Connecting the evidence</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`w-full max-w-5xl mx-auto ${className}`} id="audit-form">
@@ -66,24 +134,6 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
         {/* Animated gradient border effect (pseudo-border) */}
         <div className="absolute inset-0 bg-gradient-to-r from-teal-500/0 via-teal-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent" />
-
-        {loading ? (
-          <div className="py-24 px-6 relative z-10 flex flex-col items-center justify-center">
-            {/* Visual Metaphor: Signals converging */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-teal-500 rounded-full blur-[80px] animate-pulse" />
-              <div className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-emerald-500 rounded-full blur-[80px] animate-pulse delay-700" />
-            </div>
-
-            <div className="text-center space-y-6">
-              <Activity className="w-12 h-12 text-teal-400 animate-pulse mx-auto" />
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30">
-                <Sparkles className="w-4 h-4" />
-                <span>INITIATING ORDIGIT INVESTIGATION</span>
-              </div>
-            </div>
-          </div>
-        ) : (
           <div className="flex flex-col md:flex-row relative z-10">
             {/* Left Column: Value Prop / Engine Look */}
             <div className="md:w-5/12 p-8 md:p-12 bg-zinc-900/40 border-b md:border-b-0 md:border-r border-zinc-800/80 flex flex-col justify-between relative overflow-hidden">
@@ -234,7 +284,6 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
               </form>
             </div>
           </div>
-        )}
       </div>
     </div>
   );

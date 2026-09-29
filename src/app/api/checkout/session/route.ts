@@ -22,8 +22,13 @@ export async function POST(req: NextRequest) {
           where: { id: auditId }
         });
         
-        if (audit && !audit.userId) {
-          let businessId = audit.businessId;
+        if (audit) {
+          if (audit.userId && audit.userId !== dbUser.id) {
+            return NextResponse.json({ error: "Unauthorized to access this audit" }, { status: 403 });
+          }
+
+          if (!audit.userId) {
+            let businessId = audit.businessId;
           
           // If the audit was created anonymously, it might not have a business attached
           if (!businessId) {
@@ -47,6 +52,7 @@ export async function POST(req: NextRequest) {
               businessId: businessId
             },
           });
+        }
         }
       }
     }
