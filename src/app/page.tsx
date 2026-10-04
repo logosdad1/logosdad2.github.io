@@ -24,6 +24,8 @@ import {
   Target
 } from "lucide-react";
 
+import AIAmbientBackground from "@/components/AIAmbientBackground";
+
 export default function HomePage() {
   const scrollToForm = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,30 +40,28 @@ export default function HomePage() {
 
   return (
     <div className="space-y-32 pb-32">
-      <section className="relative pt-6 sm:pt-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center">
-        {/* Subtle glowing background gradient for the hero/form area */}
-        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[600px] bg-teal-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <section className="relative pt-6 sm:pt-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center min-h-[95vh] justify-center">
+        {/* Full screen AI Intelligence Background */}
+        <AIAmbientBackground intensity="full" />
 
-        <div className="text-center space-y-5 max-w-4xl mx-auto mb-8 relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono tracking-widest text-teal-300 bg-teal-500/10 border border-teal-500/30 shadow-sm shadow-teal-500/20 mb-2 hover:bg-teal-500/20 transition-colors">
-            <Sparkles className="w-4 h-4 text-teal-400" />
-            <span>AI BUSINESS VISIBILITY INTELLIGENCE</span>
+        <div className="text-center space-y-4 max-w-4xl mx-auto mb-10 relative z-10 mt-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-mono tracking-widest text-[#00BFA6] bg-[#00BFA6]/10 border border-[#00BFA6]/20 shadow-sm shadow-[#00BFA6]/10">
+            <Sparkles className="w-3.5 h-3.5 text-[#00BFA6]" />
+            <span>BUSINESS VISIBILITY INTELLIGENCE</span>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.05]">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.05]">
             How Does AI See <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-300">
-              Your Business?
-            </span>
+            Your Business?
           </h1>
 
-          <p className="text-lg sm:text-xl text-zinc-400 leading-relaxed max-w-3xl mx-auto font-medium">
-            Customers no longer just search—they ask intelligent systems for recommendations. We investigate the digital signals that help AI, Search, and Maps discover, understand, and trust your business.
+          <p className="text-base sm:text-lg text-[#A7B2AE] leading-relaxed max-w-2xl mx-auto font-medium">
+            ordigit investigates the public digital evidence surrounding your business and connects the signals that influence how you may be understood, discovered, trusted and chosen.
           </p>
         </div>
 
-        {/* Hero Form Component - Moved closely up to act as the primary CTA */}
-        <AuditForm className="relative z-20 shadow-[0_40px_100px_rgba(0,0,0,0.6)]" />
+        {/* Hero Form Component - Floating Intelligence Interface */}
+        <AuditForm className="relative z-20 w-full" />
       </section>
 
       {/* WHY THIS MATTERS SECTION */}

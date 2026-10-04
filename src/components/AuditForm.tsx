@@ -1,13 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, Building2, MapPin, Briefcase, Sparkles, Activity, ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+import AIAmbientBackground from "./AIAmbientBackground";
 
 interface AuditFormProps {
   defaultIndustry?: string;
   className?: string;
 }
+
+const loadingSteps = [
+  "Identifying business entity",
+  "Mapping digital presence",
+  "Reading website signals",
+  "Checking discovery surfaces",
+  "Connecting public evidence",
+  "Preparing visibility intelligence"
+];
 
 export default function AuditForm({ defaultIndustry = "Roofing", className = "" }: AuditFormProps) {
   const router = useRouter();
@@ -16,17 +26,30 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
   const [industry, setIndustry] = useState(defaultIndustry);
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [activeField, setActiveField] = useState<string | null>(null);
+
+  // System Activation Animation Logic
+  useEffect(() => {
+    if (loading && loadingStep < loadingSteps.length) {
+      const timer = setTimeout(() => {
+        setLoadingStep(s => s + 1);
+      }, 600); // Progress every 600ms
+      return () => clearTimeout(timer);
+    }
+  }, [loading, loadingStep]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!businessName.trim() || !location.trim()) {
-      setError("Please fill in your Business Name and Location to run an accurate analysis.");
+      setError("Please provide Business Name and Location to run an accurate analysis.");
       return;
     }
 
     setError(null);
     setLoading(true);
+    setLoadingStep(0);
 
     try {
       const res = await fetch("/api/audit/create", {
@@ -47,13 +70,18 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
 
       const data = await res.json();
       
+      // Trigger background worker
       fetch("/api/audit/worker", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ auditId: data.auditId })
       }).catch(console.error);
 
-      router.push(`/audit/${data.auditId}?name=${encodeURIComponent(businessName.trim())}`);
+      // Wait for the visual "System Activation" sequence to finish before navigating
+      setTimeout(() => {
+        router.push(`/audit/${data.auditId}?name=${encodeURIComponent(businessName.trim())}`);
+      }, 3600); // 6 steps * 600ms = 3600ms
+
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
       setLoading(false);
@@ -62,65 +90,56 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
 
   if (loading) {
     return (
-      <div className={`w-full max-w-5xl mx-auto ${className}`} id="audit-form">
-        <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl shadow-2xl relative overflow-hidden group min-h-[500px] flex items-center justify-center">
-          <div className="w-full max-w-xl mx-auto p-10 text-center relative z-10 space-y-4">
-            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-              <span className="font-bold">ordigit</span> is investigating
-            </h2>
-            <div className="text-xl sm:text-2xl font-bold text-teal-400 uppercase tracking-wide">
-              {businessName || "your business"}
+      <div className={`w-full max-w-2xl mx-auto ${className}`} id="audit-form">
+        <div className="rounded-2xl border border-[#00BFA6]/20 bg-black/60 backdrop-blur-xl shadow-[0_0_50px_rgba(0,191,166,0.1)] relative overflow-hidden min-h-[400px] flex items-center justify-center p-8 sm:p-12">
+          
+          {/* Subtle localized AI background inside the form during activation */}
+          <AIAmbientBackground intensity="subtle" activeState={true} />
+
+          <div className="w-full relative z-10 space-y-8">
+            <div className="text-center space-y-2">
+              <h2 className="text-sm font-mono text-[#00BFA6] tracking-widest uppercase">INITIALIZING BUSINESS INTELLIGENCE</h2>
+              {loadingStep >= loadingSteps.length && (
+                <div className="text-xl font-bold text-white tracking-wide mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  BUSINESS ENTITY IDENTIFIED<br/>
+                  <span className="text-[#A7B2AE] text-base font-normal">ordigit is now investigating...</span>
+                </div>
+              )}
             </div>
-            
-            <div className="flex flex-col gap-y-5 pt-6 relative z-10 max-w-md mx-auto">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3 text-teal-400 font-medium transition-all duration-300">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <span className="animate-pulse font-bold">→</span>
+
+            <div className="space-y-4 max-w-md mx-auto">
+              {loadingSteps.map((step, index) => {
+                const isActive = index === loadingStep;
+                const isCompleted = index < loadingStep;
+                const isPending = index > loadingStep;
+                
+                if (isPending) return null;
+
+                return (
+                  <div key={index} className={`flex items-center gap-3 transition-all duration-500 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-50'}`}>
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                      {isCompleted ? (
+                        <CheckCircle2 className="w-4 h-4 text-[#00E676]" />
+                      ) : (
+                        <div className="w-2 h-2 rounded-full bg-[#39FF88] animate-pulse shadow-[0_0_8px_#39FF88]" />
+                      )}
+                    </div>
+                    <span className={`text-sm tracking-wide ${isActive ? 'text-[#39FF88]' : 'text-[#A7B2AE]'}`}>
+                      {step}
+                    </span>
                   </div>
-                  <span className="text-base tracking-wide">Identifying the business</span>
+                );
+              })}
+            </div>
+
+            {/* Progress indicators bottom */}
+            <div className="pt-6 flex items-center justify-center gap-2">
+              {loadingSteps.map((_, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className={`text-[10px] font-mono ${idx <= loadingStep ? 'text-[#00BFA6]' : 'text-zinc-700'}`}>0{idx + 1}</span>
+                  {idx < loadingSteps.length - 1 && <span className="text-zinc-800">→</span>}
                 </div>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <span className="font-bold">○</span>
-                  </div>
-                  <span className="text-base tracking-wide">Checking business & website clarity</span>
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <span className="font-bold">○</span>
-                  </div>
-                  <span className="text-base tracking-wide">Investigating search & local visibility</span>
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <span className="font-bold">○</span>
-                  </div>
-                  <span className="text-base tracking-wide">Checking public trust signals</span>
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <span className="font-bold">○</span>
-                  </div>
-                  <span className="text-base tracking-wide">Analyzing customer discovery opportunities</span>
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3 text-zinc-600 opacity-50 transition-all duration-300">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <span className="font-bold">○</span>
-                  </div>
-                  <span className="text-base tracking-wide">Connecting the evidence</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -129,162 +148,146 @@ export default function AuditForm({ defaultIndustry = "Roofing", className = "" 
   }
 
   return (
-    <div className={`w-full max-w-5xl mx-auto ${className}`} id="audit-form">
-      <div className="rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
-        {/* Animated gradient border effect (pseudo-border) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-teal-500/0 via-teal-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/50 to-transparent" />
-          <div className="flex flex-col md:flex-row relative z-10">
-            {/* Left Column: Value Prop / Engine Look */}
-            <div className="md:w-5/12 p-8 md:p-12 bg-zinc-900/40 border-b md:border-b-0 md:border-r border-zinc-800/80 flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-teal-500/10 blur-[60px] rounded-full pointer-events-none" />
-              
-              <div className="space-y-6 relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-widest text-teal-400 font-semibold bg-teal-500/10 border border-teal-500/20">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Instant Business Scan
-                </div>
-                
-                <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-[1.1]">
-                  Investigate Your Business Visibility
-                </h3>
-                
-                <p className="text-sm sm:text-base text-zinc-400 leading-relaxed font-medium">
-                  Enter your business details and we'll investigate the digital signals that help customers find, understand, trust, and choose your business.
-                </p>
-              </div>
+    <div className={`w-full max-w-4xl mx-auto ${className} relative`} id="audit-form">
+      {/* Background Connecting Lines */}
+      <div className="absolute inset-0 pointer-events-none z-0 hidden sm:block">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          {/* Business to Website line */}
+          <path d="M 25% 60 L 75% 60" stroke="rgba(0, 191, 166, 0.2)" strokeWidth="1" fill="none" className={`transition-all duration-700 ${businessName && websiteUrl ? 'stroke-[#00BFA6]/50 shadow-[0_0_8px_#00BFA6]' : ''}`} />
+          {/* Business to Location line */}
+          <path d="M 25% 60 L 50% 180" stroke="rgba(0, 191, 166, 0.2)" strokeWidth="1" fill="none" className={`transition-all duration-700 ${businessName && location ? 'stroke-[#00BFA6]/50 shadow-[0_0_8px_#00BFA6]' : ''}`} />
+          {/* Website to Location line */}
+          <path d="M 75% 60 L 50% 180" stroke="rgba(0, 191, 166, 0.2)" strokeWidth="1" fill="none" className={`transition-all duration-700 ${websiteUrl && location ? 'stroke-[#00BFA6]/50 shadow-[0_0_8px_#00BFA6]' : ''}`} />
+          {/* Location to Industry line */}
+          <path d="M 50% 180 L 50% 280" stroke="rgba(0, 191, 166, 0.2)" strokeWidth="1" fill="none" className={`transition-all duration-700 ${location && industry ? 'stroke-[#00BFA6]/50 shadow-[0_0_8px_#00BFA6]' : ''}`} />
+          {/* Industry to Submit line */}
+          <path d="M 50% 280 L 50% 360" stroke="rgba(0, 191, 166, 0.2)" strokeWidth="1" fill="none" className={`transition-all duration-700 ${industry && businessName && location ? 'stroke-[#00BFA6]/80 stroke-[1.5px]' : ''}`} />
+        </svg>
+      </div>
 
-              <div className="pt-10 relative z-10">
-                <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs font-mono font-semibold text-zinc-500 tracking-widest uppercase">
-                  <span>Website</span> <span className="text-zinc-700">•</span>
-                  <span>Search</span> <span className="text-zinc-700">•</span>
-                  <span>Local</span> <span className="text-zinc-700">•</span>
-                  <span>Social</span> <span className="text-zinc-700">•</span>
-                  <span>Trust</span> <span className="text-zinc-700">•</span>
-                  <span>Content</span>
-                </div>
-              </div>
-            </div>
+      <form onSubmit={handleSubmit} className="relative z-10 flex flex-col items-center w-full">
+        
+        {error && (
+          <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-start gap-2 mb-8 backdrop-blur-md">
+            <span className="shrink-0 mt-0.5 text-rose-400">⚠</span>
+            {error}
+          </div>
+        )}
 
-            {/* Right Column: The Input Form */}
-            <div className="md:w-7/12 p-8 md:p-12 relative bg-[#0a0a0a]/50">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                  <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm mb-4 flex items-start gap-2">
-                    <span className="shrink-0 mt-0.5 text-rose-400">⚠</span>
-                    {error}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {/* Business Name */}
-                  <div className="space-y-1.5">
-                    <label htmlFor="businessName" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Business Name</label>
-                    <div className="relative group/input">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Building2 className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
-                      </div>
-                      <input
-                        id="businessName"
-                        type="text"
-                        required
-                        placeholder="e.g. Apex Roofing Co."
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                        className="w-full pl-12 pr-4 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 shadow-inner"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Website URL */}
-                  <div className="space-y-1.5">
-                    <label htmlFor="websiteUrl" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Website URL <span className="text-zinc-600 font-normal">(Optional)</span></label>
-                    <div className="relative group/input">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Globe className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
-                      </div>
-                      <input
-                        id="websiteUrl"
-                        type="text"
-                        placeholder="e.g. apexroofing.com"
-                        value={websiteUrl}
-                        onChange={(e) => setWebsiteUrl(e.target.value)}
-                        className="w-full pl-12 pr-4 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 shadow-inner"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Industry */}
-                  <div className="space-y-1.5">
-                    <label htmlFor="industry" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Industry</label>
-                    <div className="relative group/input">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Briefcase className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
-                      </div>
-                      <select
-                        id="industry"
-                        value={industry}
-                        onChange={(e) => setIndustry(e.target.value)}
-                        className="w-full pl-12 pr-10 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 appearance-none shadow-inner cursor-pointer"
-                      >
-                        <option value="Roofing">Roofing Companies</option>
-                        <option value="Construction">Construction Companies</option>
-                        <option value="Real Estate">Real Estate Companies</option>
-                        <option value="Contractors">General Contractors & Trades</option>
-                        <option value="Technology">Technology / SaaS Companies</option>
-                        <option value="Professional Services">Professional Services</option>
-                        <option value="Healthcare">Healthcare & Dental Practices</option>
-                        <option value="Restaurant">Restaurants & Hospitality</option>
-                        <option value="Local Business">Local Retail & Services</option>
-                        <option value="Other">Other Business</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                        <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="space-y-1.5">
-                    <label htmlFor="location" className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Location</label>
-                    <div className="relative group/input">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <MapPin className="w-5 h-5 text-zinc-500 group-focus-within/input:text-teal-400 transition-colors" />
-                      </div>
-                      <input
-                        id="location"
-                        type="text"
-                        required
-                        placeholder="e.g. Austin, TX"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        className="w-full pl-12 pr-4 h-14 rounded-xl bg-[#121212] border border-zinc-800 text-white text-base placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/20 transition-all hover:border-zinc-700 shadow-inner"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-16 rounded-2xl bg-teal-500 hover:bg-teal-400 active:bg-teal-600 disabled:opacity-70 disabled:cursor-not-allowed text-teal-950 text-lg font-extrabold flex items-center justify-center gap-3 transition-all shadow-[0_0_30px_rgba(20,184,166,0.3)] hover:shadow-[0_0_40px_rgba(20,184,166,0.5)] group/btn relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
-                    <span className="relative z-10 tracking-tight">CHECK MY BUSINESS FREE</span>
-                    <ArrowRight className="w-6 h-6 relative z-10 group-hover/btn:translate-x-1.5 transition-transform" />
-                  </button>
-
-                  <div className="text-center mt-5">
-                    <p className="text-sm text-zinc-400">
-                      No credit card required. Start with a free business visibility snapshot.
-                    </p>
-                  </div>
-                </div>
-              </form>
+        {/* Top Row: Business and Website */}
+        <div className="flex flex-col sm:flex-row w-full justify-between gap-8 sm:gap-4 mb-8">
+          {/* Business Name Node */}
+          <div className="w-full sm:w-[45%] relative group">
+            <div className={`absolute -inset-1 rounded-xl bg-gradient-to-r from-[#00BFA6]/20 to-transparent opacity-0 blur transition-opacity duration-500 ${activeField === 'name' ? 'opacity-100' : ''}`} />
+            <div className="relative bg-[#020404]/80 backdrop-blur-xl border border-white/10 rounded-xl p-5 sm:p-6 transition-all duration-300 hover:border-[#00BFA6]/40 focus-within:border-[#00BFA6] focus-within:shadow-[0_0_20px_rgba(0,191,166,0.15)]">
+              <label htmlFor="businessName" className="flex items-center gap-2 text-[10px] font-mono text-[#A7B2AE] tracking-widest uppercase mb-3">
+                <span className={`w-1.5 h-1.5 rounded-full ${businessName ? 'bg-[#39FF88]' : 'bg-white/20'}`} />
+                BUSINESS ENTITY
+              </label>
+              <input
+                id="businessName"
+                type="text"
+                required
+                placeholder="e.g. Apex Roofing Co."
+                value={businessName}
+                onFocus={() => setActiveField('name')}
+                onBlur={() => setActiveField(null)}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full bg-transparent border-none text-white text-lg sm:text-xl placeholder:text-zinc-700 focus:outline-none focus:ring-0"
+              />
             </div>
           </div>
-      </div>
+
+          {/* Website Node */}
+          <div className="w-full sm:w-[45%] relative group">
+            <div className={`absolute -inset-1 rounded-xl bg-gradient-to-l from-[#00BFA6]/20 to-transparent opacity-0 blur transition-opacity duration-500 ${activeField === 'website' ? 'opacity-100' : ''}`} />
+            <div className="relative bg-[#020404]/80 backdrop-blur-xl border border-white/10 rounded-xl p-5 sm:p-6 transition-all duration-300 hover:border-[#00BFA6]/40 focus-within:border-[#00BFA6] focus-within:shadow-[0_0_20px_rgba(0,191,166,0.15)]">
+              <label htmlFor="websiteUrl" className="flex items-center gap-2 text-[10px] font-mono text-[#A7B2AE] tracking-widest uppercase mb-3">
+                <span className={`w-1.5 h-1.5 rounded-full ${websiteUrl ? 'bg-[#39FF88]' : 'bg-white/20'}`} />
+                DIGITAL ADDRESS <span className="opacity-50 lowercase">(optional)</span>
+              </label>
+              <input
+                id="websiteUrl"
+                type="text"
+                placeholder="e.g. apexroofing.com"
+                value={websiteUrl}
+                onFocus={() => setActiveField('website')}
+                onBlur={() => setActiveField(null)}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                className="w-full bg-transparent border-none text-white text-lg sm:text-xl placeholder:text-zinc-700 focus:outline-none focus:ring-0"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Node: Location */}
+        <div className="w-full sm:w-[50%] relative group mb-8">
+          <div className={`absolute -inset-1 rounded-xl bg-gradient-to-t from-[#00BFA6]/20 to-transparent opacity-0 blur transition-opacity duration-500 ${activeField === 'location' ? 'opacity-100' : ''}`} />
+          <div className="relative bg-[#020404]/80 backdrop-blur-xl border border-white/10 rounded-xl p-5 sm:p-6 transition-all duration-300 hover:border-[#00BFA6]/40 focus-within:border-[#00BFA6] focus-within:shadow-[0_0_20px_rgba(0,191,166,0.15)]">
+            <label htmlFor="location" className="flex items-center gap-2 text-[10px] font-mono text-[#A7B2AE] tracking-widest uppercase mb-3">
+              <span className={`w-1.5 h-1.5 rounded-full ${location ? 'bg-[#39FF88]' : 'bg-white/20'}`} />
+              OPERATIONAL ORIGIN
+            </label>
+            <input
+              id="location"
+              type="text"
+              required
+              placeholder="e.g. Austin, Texas"
+              value={location}
+              onFocus={() => setActiveField('location')}
+              onBlur={() => setActiveField(null)}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full bg-transparent border-none text-white text-lg sm:text-xl placeholder:text-zinc-700 focus:outline-none focus:ring-0"
+            />
+          </div>
+        </div>
+
+        {/* Lower Node: Industry */}
+        <div className="w-full sm:w-[40%] relative group mb-12">
+          <div className={`absolute -inset-1 rounded-xl bg-[#00BFA6]/10 opacity-0 blur transition-opacity duration-500 ${activeField === 'industry' ? 'opacity-100' : ''}`} />
+          <div className="relative bg-[#020404]/80 backdrop-blur-xl border border-white/10 rounded-xl p-4 sm:p-5 transition-all duration-300 hover:border-[#00BFA6]/40 focus-within:border-[#00BFA6] focus-within:shadow-[0_0_20px_rgba(0,191,166,0.15)]">
+            <label htmlFor="industry" className="flex items-center gap-2 text-[10px] font-mono text-[#A7B2AE] tracking-widest uppercase mb-2">
+              <span className={`w-1.5 h-1.5 rounded-full ${industry ? 'bg-[#39FF88]' : 'bg-white/20'}`} />
+              CATEGORY
+            </label>
+            <div className="relative">
+              <select
+                id="industry"
+                value={industry}
+                onFocus={() => setActiveField('industry')}
+                onBlur={() => setActiveField(null)}
+                onChange={(e) => setIndustry(e.target.value)}
+                className="w-full bg-transparent border-none text-white text-base focus:outline-none focus:ring-0 appearance-none cursor-pointer"
+              >
+                <option value="Roofing" className="bg-black text-white">Roofing / Construction</option>
+                <option value="Real Estate" className="bg-black text-white">Real Estate</option>
+                <option value="Technology" className="bg-black text-white">Technology / SaaS</option>
+                <option value="Professional Services" className="bg-black text-white">Professional Services</option>
+                <option value="Healthcare" className="bg-black text-white">Healthcare / Dental</option>
+                <option value="Restaurant" className="bg-black text-white">Restaurant / Hospitality</option>
+                <option value="Local Business" className="bg-black text-white">Local Retail & Services</option>
+                <option value="Other" className="bg-black text-white">Other Business</option>
+              </select>
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-4 h-4 text-[#A7B2AE]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Submission Node */}
+        <div className="relative z-20 mt-4">
+          <div className="absolute inset-0 bg-[#00BFA6] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-full" />
+          <button
+            type="submit"
+            className="relative px-8 py-4 bg-white text-black font-semibold tracking-wide rounded-full hover:bg-[#E5FFF8] transition-all duration-300 flex items-center gap-3 group shadow-[0_0_30px_rgba(0,191,166,0.3)] hover:shadow-[0_0_50px_rgba(0,191,166,0.5)] hover:-translate-y-1"
+          >
+            <span className="text-sm">INVESTIGATE MY BUSINESS</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+
+      </form>
     </div>
   );
 }

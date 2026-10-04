@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   RotateCcw,
 } from "lucide-react";
+import AIAmbientBackground from "@/components/AIAmbientBackground";
 
 export default function DashboardPage() {
   const [businesses, setBusinesses] = useState<any[]>([]);
@@ -44,15 +45,21 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
-        <p className="text-xs font-mono text-slate-400">Loading Account Dashboard...</p>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4 relative">
+        <div className="fixed inset-0 z-[-1]">
+          <AIAmbientBackground intensity="minimal" />
+        </div>
+        <Loader2 className="w-8 h-8 animate-spin text-[#00BFA6]" />
+        <p className="text-xs font-mono text-[#A7B2AE] tracking-widest uppercase">Loading System Intelligence...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 relative min-h-screen">
+      <div className="fixed inset-0 z-[-1]">
+        <AIAmbientBackground intensity="minimal" />
+      </div>
       {/* Dashboard Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
         <div className="space-y-1">

@@ -4,8 +4,9 @@ import { useEffect, useState, Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import TeaserReport from "@/components/TeaserReport";
 import FullReportView from "@/components/FullReportView";
-import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import AIAmbientBackground from "@/components/AIAmbientBackground";
 
 function AuditDetailContent() {
   const params = useParams();
@@ -161,22 +162,27 @@ function AuditDetailContent() {
     
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-xl mx-auto bg-[#121212]/90 border border-zinc-800/80 rounded-2xl p-10 shadow-2xl backdrop-blur-sm relative overflow-hidden">
-          <div className="text-center relative z-10 mb-8 space-y-4">
+        {/* Active Investigation Background */}
+        <div className="fixed inset-0 z-[-1]">
+          <AIAmbientBackground intensity="full" activeState={true} />
+        </div>
+
+        <div className="w-full max-w-2xl mx-auto rounded-2xl border border-[#00BFA6]/20 bg-black/60 backdrop-blur-xl shadow-[0_0_50px_rgba(0,191,166,0.1)] p-10 relative overflow-hidden">
+          <div className="text-center relative z-10 mb-10 space-y-4">
             {isTransitioning ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-2 text-2xl sm:text-3xl font-light text-white tracking-tight">
-                  <span className="text-emerald-400 font-bold">✓</span>
-                  <span>Investigation complete</span>
+              <div className="space-y-4 animate-in fade-in duration-500">
+                <div className="flex items-center justify-center gap-3 text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                  <span className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676]"></span>
+                  <span>INVESTIGATION COMPLETE</span>
                 </div>
-                <p className="text-zinc-400 text-lg">ordigit connected the available evidence.</p>
+                <p className="text-[#A7B2AE] font-mono text-xs tracking-widest uppercase">EVIDENCE CONNECTED. PREPARING REPORT.</p>
               </div>
             ) : (
               <>
-                <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
-                  <span className="font-bold">ordigit</span> is investigating
+                <h2 className="text-xs font-mono text-[#00BFA6] tracking-widest uppercase animate-pulse">
+                  SYSTEM ACTIVE: GATHERING SIGNALS
                 </h2>
-                <div className="text-xl sm:text-2xl font-bold text-teal-400 uppercase tracking-wide">
+                <div className="text-2xl sm:text-3xl font-bold text-white tracking-wide uppercase">
                   {businessName}
                 </div>
               </>
@@ -184,24 +190,24 @@ function AuditDetailContent() {
           </div>
           
           {!isTransitioning && (
-            <div className="flex flex-col gap-y-5 pt-6 relative z-10 max-w-md mx-auto">
+            <div className="flex flex-col gap-y-5 relative z-10 max-w-md mx-auto">
               {steps.map((step, idx) => (
                 <div key={idx} className="flex flex-col">
-                  <div className={`flex items-center gap-3 transition-all duration-300 ${step.done ? 'text-zinc-500' : step.active ? 'text-teal-400 font-medium' : 'text-zinc-600 opacity-50'}`}>
-                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                  <div className={`flex items-center gap-4 transition-all duration-500 ${step.done ? 'text-[#00BFA6] opacity-70' : step.active ? 'text-[#39FF88] opacity-100 translate-x-2' : 'text-[#A7B2AE] opacity-40'}`}>
+                    <div className="w-4 h-4 flex items-center justify-center shrink-0">
                       {step.done ? (
-                        <span className="font-bold">✓</span>
+                        <CheckCircle2 className="w-4 h-4" />
                       ) : step.active ? (
-                        <span className="animate-pulse font-bold">→</span>
+                        <div className="w-2 h-2 rounded-full bg-[#39FF88] animate-pulse shadow-[0_0_8px_#39FF88]" />
                       ) : (
-                        <span className="font-bold">○</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#A7B2AE]" />
                       )}
                     </div> 
-                    <span className="text-base tracking-wide">{step.label}</span>
+                    <span className="text-sm tracking-wide font-medium">{step.label}</span>
                   </div>
                   {(step.evidence) && (
-                    <div className="pl-8 text-sm text-zinc-500 mt-1">
-                      {step.evidence}
+                    <div className="pl-8 text-xs font-mono text-[#A7B2AE] mt-1.5 opacity-80 animate-in fade-in slide-in-from-left-1">
+                      ↳ {step.evidence}
                     </div>
                   )}
                 </div>
@@ -230,7 +236,11 @@ function AuditDetailContent() {
   }
 
   return (
-    <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 relative min-h-screen">
+      <div className="fixed inset-0 z-[-1]">
+        <AIAmbientBackground intensity="minimal" />
+      </div>
+
       {audit.isPaid || isJustUnlocked ? (
         <FullReportView
           auditId={audit.id}
