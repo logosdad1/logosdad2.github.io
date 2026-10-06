@@ -27,14 +27,20 @@ export async function POST(req: NextRequest) {
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
+  // Handle successful checkout
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     
+    // Validate session payment status
+    if (session.payment_status !== "paid") {
+      console.warn("Checkout session received but payment_status is not paid:", session.id, session.payment_status);
+      return new NextResponse("Payment not complete", { status: 200 });
+    }
+
     const auditId = session.metadata?.auditId;
-    const targetTier = session.metadata?.targetTier || "ESSENTIAL";
+    const targetTier = (session.metadata?.targetTier as any) || "ESSENTIAL";
     const amount = (session.amount_total || 0) / 100;
     const currency = session.currency || "USD";
-    const paymentIntentId = session.payment_intent as string;
 
     if (!auditId) {
       console.error("Missing auditId in webhook metadata", session.id);
@@ -42,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // Check for idempotency: Does this payment already exist?
+      // Idempotency: Does this payment already exist?
       const existingPayment = await prisma.payment.findFirst({
         where: { transactionRef: session.id },
       });
@@ -59,7 +65,7 @@ export async function POST(req: NextRequest) {
 
       const newTotalTierPrice = Math.max(audit.tierPrice || 0, (audit.tierPrice || 0) + amount);
 
-      // We use transaction to ensure both payment log and audit unlock happen atomically
+      // Atomic unlock and payment transaction
       await prisma.$transaction([
         prisma.payment.create({
           data: {
@@ -69,7 +75,7 @@ export async function POST(req: NextRequest) {
             currency: currency.toUpperCase(),
             status: "SUCCEEDED",
             provider: "stripe",
-            transactionRef: session.id, // we use checkout session id as ref for idempotency
+            transactionRef: session.id,
           },
         }),
         prisma.audit.update({
@@ -79,21 +85,64 @@ export async function POST(req: NextRequest) {
             tierPrice: newTotalTierPrice,
             isPaid: true,
             paidAt: new Date(),
-            status: "PROCESSING", // Start background generation visually
+            status: "COMPLETED",
           },
-        })
+        }),
       ]);
 
       console.log(`Payment confirmed for audit ${auditId}, upgraded to ${targetTier}`);
-      
-      // In a real production system, you'd trigger an asynchronous background worker here 
-      // (like Inngest, BullMQ, or AWS SQS) to actually generate the new deeper intelligence report.
-      // For now, we update the status to processing, and it will be fulfilled asynchronously.
-
     } catch (err: any) {
       console.error("Error processing checkout.session.completed:", err.message);
       return new NextResponse("Database error", { status: 500 });
     }
+  }
+
+  // Handle charge refunds - revoke entitlements if fully refunded
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId = charge.payment_intent as string;
+
+    try {
+      // Find payment record
+      const payment = await prisma.payment.findFirst({
+        where: {
+          OR: [
+            { transactionRef: charge.id },
+            { transactionRef: paymentIntentId },
+          ],
+        },
+        include: { audit: true },
+      });
+
+      if (payment) {
+        if (charge.refunded) {
+          // Fully refunded - mark payment refunded and reset audit access
+          await prisma.$transaction([
+            prisma.payment.update({
+              where: { id: payment.id },
+              data: { status: "REFUNDED" },
+            }),
+            prisma.audit.update({
+              where: { id: payment.auditId },
+              data: {
+                isPaid: false,
+                tier: "SNAPSHOT",
+                tierPrice: 0,
+              },
+            }),
+          ]);
+          console.log(`Entitlement revoked for refunded audit ${payment.auditId}`);
+        }
+      }
+    } catch (err: any) {
+      console.error("Error processing charge.refunded:", err.message);
+    }
+  }
+
+  // Handle failed payment intent
+  if (event.type === "payment_intent.payment_failed") {
+    const pi = event.data.object as Stripe.PaymentIntent;
+    console.warn(`Payment failed for payment_intent: ${pi.id}`);
   }
 
   return new NextResponse("Success", { status: 200 });

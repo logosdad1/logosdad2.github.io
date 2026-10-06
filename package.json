@@ -6,6 +6,7 @@
     "dev": "next dev -p 3000",
     "build": "prisma generate && next build",
     "start": "next start -p 3000",
+    "test": "npx tsx scripts/test-payment-intelligence.ts",
     "lint": "next lint",
     "postinstall": "prisma generate"
   },

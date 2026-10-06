@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSystemSettings } from "@/lib/config";
 import { getCurrentUser } from "@/lib/auth";
+import { filterReportDataByTier } from "@/lib/entitlements";
+import { AuditReportDataPayload } from "@/lib/types";
 
 export async function GET(
   req: NextRequest,
@@ -31,32 +33,12 @@ export async function GET(
     }
 
     const settings = await getSystemSettings();
-    let rawReportData = audit.reportData ? JSON.parse(audit.reportData.fullJson) : null;
+    let rawReportData: AuditReportDataPayload | null = audit.reportData ? JSON.parse(audit.reportData.fullJson) : null;
 
     // 2. Entitlement Check
-    // Do not expose the complete paid report in HTML/JavaScript before authorization.
-    if (rawReportData && !audit.isPaid) {
-      // Strip everything except the executive summary and categories for the Teaser
-      rawReportData = {
-        executiveSummary: rawReportData.executiveSummary,
-        categories: rawReportData.categories,
-        lockedTeasers: rawReportData.lockedTeasers,
-      };
-    } else if (rawReportData && audit.isPaid) {
-      // Depending on the tier, we might want to strip higher tier features.
-      // E.g., ESSENTIAL doesn't get thirtyDayPlan, competitorComparison.
-      // GROWTH doesn't get queryCoverageAnalysis, strategicRoadmap.
-      if (audit.tier === "ESSENTIAL") {
-        delete rawReportData.thirtyDayPlan;
-        delete rawReportData.competitorComparison;
-        delete rawReportData.customerIntentAnalysis;
-        delete rawReportData.queryCoverageAnalysis;
-        delete rawReportData.strategicRoadmap;
-      } else if (audit.tier === "GROWTH") {
-        delete rawReportData.queryCoverageAnalysis;
-        delete rawReportData.strategicRoadmap;
-      }
-    }
+    // Enforce centralized tier capability filter so unauthorized users never receive paid intelligence in JSON
+    const effectiveTier = (audit.tier as any) || (audit.isPaid ? "ESSENTIAL" : "SNAPSHOT");
+    const sanitizedReportData = filterReportDataByTier(rawReportData, effectiveTier, audit.isPaid);
 
     return NextResponse.json({
       audit: {
@@ -73,7 +55,7 @@ export async function GET(
         createdAt: audit.createdAt,
       },
       score: audit.score,
-      reportData: rawReportData,
+      reportData: sanitizedReportData,
       price: settings.paidReportPrice,
       tierPrices: settings.tierPrices,
     });

@@ -1,42 +1,168 @@
 "use client";
-console.log("HMR trigger");
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ScoreGauge from "./ScoreGauge";
 import { AuditReportDataPayload, IntelligenceTier } from "@/lib/types";
-import { Printer,Copy,Check,ShieldCheck,Zap,Layers,Search,Users,TrendingUp,AlertCircle,CheckCircle2,Send,Sparkles,ArrowRight,Lock,Target,Calendar,BarChart2,Map,AlertTriangle } from "lucide-react";
+import { 
+  Printer, Copy, Check, AlertCircle, CheckCircle2, Send, Sparkles, 
+  ArrowRight, Lock, Target, Calendar, BarChart2, Map, AlertTriangle, HelpCircle 
+} from "lucide-react";
 
-interface FullReportViewProps { auditId:string; businessName:string; url:string; industry:string; location:string; overallScore:number; reportData:AuditReportDataPayload; tier?:IntelligenceTier; tierPrices?:{essential:number;growth:number;authority:number}; isJustUnlocked?: boolean; unlockedTier?: string; }
+interface FullReportViewProps { 
+  auditId: string; 
+  businessName: string; 
+  url: string; 
+  industry: string; 
+  location: string; 
+  overallScore: number; 
+  reportData: AuditReportDataPayload; 
+  tier?: IntelligenceTier; 
+  tierPrices?: { essential: number; growth: number; authority: number }; 
+  isJustUnlocked?: boolean; 
+  unlockedTier?: string; 
+}
 
-export default function FullReportView({ auditId,businessName,url,industry,location,overallScore,reportData, tier="ESSENTIAL", tierPrices, isJustUnlocked, unlockedTier }: FullReportViewProps) {
+export default function FullReportView({ 
+  auditId, 
+  businessName, 
+  url, 
+  industry, 
+  location, 
+  overallScore, 
+  reportData, 
+  tier = "ESSENTIAL", 
+  tierPrices, 
+  isJustUnlocked, 
+  unlockedTier 
+}: FullReportViewProps) {
   const searchParams = useSearchParams();
   const isCanceled = searchParams.get("canceled") === "true";
   
-  const tp = tierPrices || {essential:10,growth:25,authority:50};
-  const [activeTab,setActiveTab]=useState<string>("executive");
-  const [planFilter,setPlanFilter]=useState<"ALL"|"FIX_NOW"|"FIX_NEXT"|"OPTIMIZE_LATER">("ALL");
-  const [copiedSchema,setCopiedSchema]=useState(false);
-  const [leadForm,setLeadForm]=useState({name:"",email:"",phone:"",service:"AI visibility optimization",message:""});
-  const [leadSubmitted,setLeadSubmitted]=useState(false);
-  const [leadLoading,setLeadLoading]=useState(false);
-  const [upgrading,setUpgrading]=useState(false);
-  const {executiveSummary,categories,aiReadinessDetails,actionPlan,competitorComparison,generatedSchema,customerIntentAnalysis,thirtyDayPlan,queryCoverageAnalysis,strategicRoadmap}=reportData;
-  const isGrowth=tier==="GROWTH"||tier==="AUTHORITY";
-  const isAuthority=tier==="AUTHORITY";
-  const handleCopySchema=()=>{navigator.clipboard.writeText(generatedSchema.codeSnippet);setCopiedSchema(true);setTimeout(()=>setCopiedSchema(false),2500);};
-  const handlePrint=()=>window.print();
-  const handleUpgrade=(targetTier:IntelligenceTier)=>{setUpgrading(true);fetch("/api/checkout/session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({auditId,tier:targetTier})}).then(r=>r.json()).then(d=>{if(d.checkoutUrl)window.location.href=d.checkoutUrl;else{alert("Checkout error.");setUpgrading(false);}}).catch(()=>{alert("Error.");setUpgrading(false);});};
-  const handleLeadSubmit=async(e:React.FormEvent)=>{e.preventDefault();setLeadLoading(true);try{const res=await fetch("/api/leads/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({auditId,company:businessName,...leadForm})});if(res.ok)setLeadSubmitted(true);else alert("Failed.");}catch{alert("Error.");}finally{setLeadLoading(false);}};
-  const filteredPlan = actionPlan?.filter(item => planFilter === "ALL" || item.tier === planFilter) || [];
-  const baseTabs=[{id:"executive",label:"Executive Summary"},{id:"action_plan",label:"Priority Action Plan"},{id:"ai_visibility",label:"AI Visibility"},{id:"website_clarity",label:"Business & Website Clarity"},{id:"search_local",label:"Search & Local"},{id:"content_authority",label:"Content & Authority"},{id:"trust",label:"Trust & Credibility"},{id:"conversion",label:"Conversion Readiness"},{id:"schema",label:"Schema Code"}];
-  const allTabs=[...baseTabs,{id:"competitors",label:"Competitive Context"},{id:"customer_intent",label:"Customer Intent"},{id:"thirty_day_plan",label:"30-Day Plan"},{id:"query_coverage",label:"Query Coverage"},{id:"strategic_roadmap",label:"Strategic Roadmap"}];
+  const tp = tierPrices || { essential: 10, growth: 25, authority: 50 };
+  const [activeTab, setActiveTab] = useState<string>("executive");
+  const [planFilter, setPlanFilter] = useState<"ALL" | "FIX_NOW" | "FIX_NEXT" | "OPTIMIZE_LATER">("ALL");
+  const [copiedSchema, setCopiedSchema] = useState(false);
+  const [leadForm, setLeadForm] = useState({ name: "", email: "", phone: "", service: "AI visibility optimization", message: "" });
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [leadLoading, setLeadLoading] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+
+  // Safe defaults to eliminate runtime null/undefined errors across legacy and tiered reports
+  const executiveSummary = reportData?.executiveSummary || {
+    currentVisibility: "Visibility intelligence analysis complete.",
+    visibilityStatement: "Digital visibility findings established from available public evidence.",
+    keyFindings: [],
+  };
+
+  const categories = reportData?.categories || {
+    websiteClarity: { score: 0, weight: 20, status: "critical" as const, explanation: "Business clarity", findings: [] },
+    aiVisibility: { score: 0, weight: 20, status: "critical" as const, explanation: "AI visibility", findings: [] },
+    searchLocal: { score: 0, weight: 15, status: "critical" as const, explanation: "Search presence", findings: [] },
+    contentAuthority: { score: 0, weight: 15, status: "critical" as const, explanation: "Content authority", findings: [] },
+    trustCredibility: { score: 0, weight: 15, status: "critical" as const, explanation: "Trust signals", findings: [] },
+    conversionReadiness: { score: 0, weight: 15, status: "critical" as const, explanation: "Conversion readiness", findings: [] },
+  };
+
+  const aiReadinessDetails = reportData?.aiReadinessDetails || {
+    canUnderstandWhatYouDo: false,
+    canUnderstandWhoYouServe: false,
+    canUnderstandLocations: false,
+    entityAmbiguityLevel: "MODERATE" as const,
+    missingCrucialContext: [],
+    observedEvidence: [],
+    readinessAssessment: "Assessment pending further verified signals.",
+  };
+
+  const actionPlan = reportData?.actionPlan || [];
+  const competitorComparison = reportData?.competitorComparison || [];
+  const generatedSchema = reportData?.generatedSchema || {
+    type: "LocalBusiness",
+    codeSnippet: "<!-- Schema generation pending -->",
+    instructions: "Paste into the <head> of your website.",
+  };
+  const customerIntentAnalysis = reportData?.customerIntentAnalysis || [];
+  const thirtyDayPlan = reportData?.thirtyDayPlan || [];
+  const queryCoverageAnalysis = reportData?.queryCoverageAnalysis || [];
+  const strategicRoadmap = reportData?.strategicRoadmap || null;
+  const serviceOpportunities = reportData?.serviceOpportunities || [];
+
+  const handleCopySchema = () => {
+    navigator.clipboard.writeText(generatedSchema.codeSnippet);
+    setCopiedSchema(true);
+    setTimeout(() => setCopiedSchema(false), 2500);
+  };
+
+  const handlePrint = () => window.print();
+
+  const handleUpgrade = (targetTier: IntelligenceTier) => {
+    setUpgrading(true);
+    fetch("/api/checkout/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ auditId, tier: targetTier }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.checkoutUrl) window.location.href = d.checkoutUrl;
+        else {
+          alert("Checkout error.");
+          setUpgrading(false);
+        }
+      })
+      .catch(() => {
+        alert("Error initiating checkout.");
+        setUpgrading(false);
+      });
+  };
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLeadLoading(true);
+    try {
+      const res = await fetch("/api/leads/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ auditId, company: businessName, ...leadForm }),
+      });
+      if (res.ok) setLeadSubmitted(true);
+      else alert("Failed to submit request.");
+    } catch {
+      alert("Error submitting request.");
+    } finally {
+      setLeadLoading(false);
+    }
+  };
+
+  const filteredPlan = actionPlan.filter((item) => planFilter === "ALL" || item.tier === planFilter);
+
+  const baseTabs = [
+    { id: "executive", label: "Executive Summary" },
+    { id: "action_plan", label: "Priority Action Plan" },
+    { id: "ai_visibility", label: "AI Visibility" },
+    { id: "website_clarity", label: "Business & Website Clarity" },
+    { id: "search_local", label: "Search & Local" },
+    { id: "content_authority", label: "Content & Authority" },
+    { id: "trust", label: "Trust & Credibility" },
+    { id: "conversion", label: "Conversion Readiness" },
+    { id: "schema", label: "Schema Code" },
+  ];
+
+  const allTabs = [
+    ...baseTabs,
+    { id: "competitors", label: "Competitive Context" },
+    { id: "customer_intent", label: "Customer Intent" },
+    { id: "thirty_day_plan", label: "30-Day Plan" },
+    { id: "query_coverage", label: "Query Coverage" },
+    { id: "strategic_roadmap", label: "Strategic Roadmap" },
+  ];
+
   const ContextualUpgradeBanner = ({ targetTier, price, unlockedCount, totalFound, foundDescription, nextTierAdds }: any) => {
-    const lockedCount = totalFound - unlockedCount;
+    const lockedCount = Math.max(0, totalFound - unlockedCount);
     
-    if (lockedCount <= 0) {
+    if (totalFound === 0) {
       return (
         <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/30 text-center text-xs text-slate-500 italic mt-6">
-          No additional significant intelligence was identified from the available evidence.
+          This intelligence module requires the {targetTier} tier to unlock deeper findings.
         </div>
       );
     }
@@ -45,7 +171,6 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
       <div className="mt-8 rounded-2xl border border-indigo-900/40 bg-indigo-950/20 overflow-hidden no-print">
         <div className="p-6 sm:p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
             <div className="space-y-2">
               <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">What You Can Understand Now</div>
               <div className="flex items-start gap-2">
@@ -57,11 +182,11 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-wider">What ordigit Already Found</div>
+              <div className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-wider">What ordigit Discovered</div>
               <div className="flex items-start gap-2">
                 <Lock className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
                 <p className="text-sm text-indigo-200 font-medium leading-relaxed">
-                  {lockedCount} additional {foundDescription}.
+                  {lockedCount > 0 ? `${lockedCount} additional ` : "Expanded "}{foundDescription}.
                 </p>
               </div>
             </div>
@@ -75,21 +200,25 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                 </p>
               </div>
             </div>
-            
           </div>
         </div>
         <div className="bg-indigo-950/40 px-6 py-4 border-t border-indigo-900/40 flex flex-col sm:flex-row items-center justify-between gap-4">
-           <div className="text-xs text-indigo-300">
-             Unlock the next level of investigation to reveal the complete picture.
-           </div>
-           <button onClick={() => handleUpgrade(targetTier)} disabled={upgrading} className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-             <span>{upgrading ? "Redirecting..." : (isCanceled && searchParams.get("tier") === targetTier ? `CONTINUE WITH ${targetTier.toUpperCase()} — $${price}` : `Unlock ${targetTier.charAt(0) + targetTier.slice(1).toLowerCase()} — $${price}`)}</span>
-             <ArrowRight className="w-4 h-4"/>
-           </button>
+          <div className="text-xs text-indigo-300">
+            Unlock the next level of investigation to reveal the complete picture.
+          </div>
+          <button 
+            onClick={() => handleUpgrade(targetTier)} 
+            disabled={upgrading} 
+            className="w-full sm:w-auto py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+          >
+            <span>{upgrading ? "Redirecting..." : (isCanceled && searchParams.get("tier") === targetTier ? `CONTINUE WITH ${targetTier.toUpperCase()} — $${price}` : `Unlock ${targetTier.charAt(0) + targetTier.slice(1).toLowerCase()} — $${price}`)}</span>
+            <ArrowRight className="w-4 h-4"/>
+          </button>
         </div>
       </div>
     );
   };
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-16">
       {isJustUnlocked && (
@@ -106,14 +235,147 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
           <p className="text-sm font-medium">Your checkout was cancelled. Your intelligence is still available at its current level.</p>
         </div>
       )}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print"><div className="flex items-center gap-3"><div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"><CheckCircle2 className="w-3.5 h-3.5"/><span>Full Unlocked Report &bull; Investigation: {auditId.slice(0,10)}</span></div><span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{tier} TIER</span></div><button onClick={handlePrint} className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-colors"><Printer className="w-3.5 h-3.5"/><span>Download / Print PDF</span></button></div>
-      <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print"><div className="flex flex-col md:flex-row items-center justify-between gap-8"><div className="space-y-3 text-center md:text-left flex-1"><div className="text-xs font-mono uppercase tracking-wider text-indigo-400">Business Visibility Intelligence Report &bull; {tier} Tier</div><h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{businessName}</h1><div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 font-mono"><span>{url || "No Website Provided"}</span><span>&bull;</span><span>{industry}</span><span>&bull;</span><span>{location}</span></div><blockquote className="text-sm text-slate-300 italic border-l-2 border-indigo-500 pl-3 mt-2">&ldquo;{executiveSummary.visibilityStatement}&rdquo;</blockquote></div><div className="shrink-0 flex flex-col items-center p-6 rounded-2xl bg-slate-900/80 border border-slate-800 card-print"><span className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Overall Score</span><ScoreGauge score={overallScore} size={150}/></div></div></div>
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-800 no-print">{allTabs.map(tab=>(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${activeTab===tab.id?"bg-indigo-600 text-white shadow-sm":"text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"}`}>{tab.label}</button>))}</div>
-      {(activeTab==="executive"||typeof window==="undefined")&&(<div className="space-y-6"><div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-4"><h2 className="text-lg font-semibold text-white tracking-tight">Executive Summary</h2><p className="text-sm text-slate-300 leading-relaxed">{executiveSummary.currentVisibility}</p><div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800/80">
-        <div className="space-y-3"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-400"><AlertCircle className="w-4 h-4"/><span>Key Weaknesses</span></div><ul className="space-y-3">{executiveSummary.keyFindings.filter(f=>f.type==="WEAKNESS").slice(0,3).map((finding,i)=>(<li key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-slate-900 border border-slate-800"><div className="flex items-center gap-2"><span className="text-rose-500 font-bold shrink-0 text-xs">&#10005;</span><span className="text-xs font-bold text-white">{finding.title}</span></div><p className="text-xs text-slate-400 mt-1">{finding.whatWeFound}</p></li>))}</ul></div>
-        <div className="space-y-3"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400"><Sparkles className="w-4 h-4"/><span>Key Opportunities</span></div><ul className="space-y-3">{executiveSummary.keyFindings.filter(f=>f.type==="OPPORTUNITY").slice(0,3).map((finding,i)=>(<li key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-slate-900 border border-slate-800"><div className="flex items-center gap-2"><span className="text-indigo-400 font-bold shrink-0 text-xs">&rarr;</span><span className="text-xs font-bold text-white">{finding.title}</span></div><p className="text-xs text-slate-400 mt-1">{finding.whatWeFound}</p><p className="text-[11px] text-teal-400 mt-1">Action: {finding.recommendedAction}</p></li>))}</ul></div>
-      </div></div></div>)}
-      {(activeTab==="action_plan"||typeof window==="undefined")&&(<div className="space-y-6"><div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-5"><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h2 className="text-lg font-semibold text-white tracking-tight">Priority Action Plan</h2><p className="text-xs text-slate-400">Ordered by highest ROI. Start at FIX NOW.</p></div><div className="flex items-center gap-1.5 p-1 rounded-lg bg-slate-900 border border-slate-800 no-print">{(["ALL","FIX_NOW","FIX_NEXT","OPTIMIZE_LATER"] as const).map(t=>(<button key={t} onClick={()=>setPlanFilter(t)} className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-medium transition-colors ${planFilter===t?"bg-slate-800 text-white":"text-slate-400 hover:text-white"}`}>{t.replace(/_/g," ")}</button>))}</div></div><div className="space-y-3">{filteredPlan.map(item=>{let bc="bg-rose-500/10 text-rose-400 border-rose-500/30";if(item.tier==="FIX_NEXT")bc="bg-amber-500/10 text-amber-400 border-amber-500/30";if(item.tier==="OPTIMIZE_LATER")bc="bg-blue-500/10 text-blue-400 border-blue-500/30";return(<div key={item.id} className="p-4 rounded-xl bg-slate-900/50 border border-slate-800/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 card-print"><div className="space-y-1"><div className="flex items-center gap-2"><span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${bc}`}>{item.tier.replace(/_/g," ")}</span><span className="text-[11px] font-mono text-slate-500">{item.category}</span></div><h4 className="text-sm font-semibold text-white">{item.title}</h4><p className="text-xs text-slate-300 leading-relaxed max-w-2xl">{item.description}</p></div><div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0"><span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Impact: {item.impact}</span><span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800/60 text-slate-400">Effort: {item.effort}</span></div></div>);})}</div></div></div>)}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
+        <div className="flex items-center gap-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5"/><span>Full Unlocked Report &bull; Investigation: {auditId.slice(0, 10)}</span>
+          </div>
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{tier} TIER</span>
+        </div>
+        <button onClick={handlePrint} className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-colors">
+          <Printer className="w-3.5 h-3.5"/><span>Download / Print PDF</span>
+        </button>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-3 text-center md:text-left flex-1">
+            <div className="text-xs font-mono uppercase tracking-wider text-indigo-400">Business Visibility Intelligence Report &bull; {tier} Tier</div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{businessName}</h1>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 font-mono">
+              <span>{url || "No Website Provided"}</span><span>&bull;</span><span>{industry}</span><span>&bull;</span><span>{location}</span>
+            </div>
+            <blockquote className="text-sm text-slate-300 italic border-l-2 border-indigo-500 pl-3 mt-2">&ldquo;{executiveSummary.visibilityStatement}&rdquo;</blockquote>
+          </div>
+          <div className="shrink-0 flex flex-col items-center p-6 rounded-2xl bg-slate-900/80 border border-slate-800 card-print">
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">Overall Score</span>
+            <ScoreGauge score={overallScore} size={150}/>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-800 no-print">
+        {allTabs.map((tab) => (
+          <button 
+            key={tab.id} 
+            onClick={() => setActiveTab(tab.id)} 
+            className={`px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${activeTab === tab.id ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"}`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {(activeTab === "executive" || typeof window === "undefined") && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-4">
+            <h2 className="text-lg font-semibold text-white tracking-tight">Executive Summary</h2>
+            <p className="text-sm text-slate-300 leading-relaxed">{executiveSummary.currentVisibility}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800/80">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-400">
+                  <AlertCircle className="w-4 h-4"/><span>Key Weaknesses</span>
+                </div>
+                <ul className="space-y-3">
+                  {executiveSummary.keyFindings.filter((f) => f.type === "WEAKNESS").slice(0, 3).map((finding, i) => (
+                    <li key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-slate-900 border border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="text-rose-500 font-bold shrink-0 text-xs">&#10005;</span>
+                        <span className="text-xs font-bold text-white">{finding.title}</span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">{finding.whatWeFound}</p>
+                    </li>
+                  ))}
+                  {executiveSummary.keyFindings.filter((f) => f.type === "WEAKNESS").length === 0 && (
+                    <li className="text-xs text-slate-500 italic p-3">No critical weaknesses identified in baseline evidence.</li>
+                  )}
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400">
+                  <Sparkles className="w-4 h-4"/><span>Key Opportunities</span>
+                </div>
+                <ul className="space-y-3">
+                  {executiveSummary.keyFindings.filter((f) => f.type === "OPPORTUNITY").slice(0, 3).map((finding, i) => (
+                    <li key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-slate-900 border border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="text-indigo-400 font-bold shrink-0 text-xs">&rarr;</span>
+                        <span className="text-xs font-bold text-white">{finding.title}</span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">{finding.whatWeFound}</p>
+                      <p className="text-[11px] text-teal-400 mt-1">Action: {finding.recommendedAction}</p>
+                    </li>
+                  ))}
+                  {executiveSummary.keyFindings.filter((f) => f.type === "OPPORTUNITY").length === 0 && (
+                    <li className="text-xs text-slate-500 italic p-3">Baseline digital presence is well established.</li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(activeTab === "action_plan" || typeof window === "undefined") && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-white tracking-tight">Priority Action Plan</h2>
+                <p className="text-xs text-slate-400">Ordered by highest ROI. Start at FIX NOW.</p>
+              </div>
+              <div className="flex items-center gap-1.5 p-1 rounded-lg bg-slate-900 border border-slate-800 no-print">
+                {(["ALL", "FIX_NOW", "FIX_NEXT", "OPTIMIZE_LATER"] as const).map((t) => (
+                  <button 
+                    key={t} 
+                    onClick={() => setPlanFilter(t)} 
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-medium transition-colors ${planFilter === t ? "bg-slate-800 text-white" : "text-slate-400 hover:text-white"}`}
+                  >
+                    {t.replace(/_/g, " ")}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-3">
+              {filteredPlan.map((item) => {
+                let bc = "bg-rose-500/10 text-rose-400 border-rose-500/30";
+                if (item.tier === "FIX_NEXT") bc = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+                if (item.tier === "OPTIMIZE_LATER") bc = "bg-blue-500/10 text-blue-400 border-blue-500/30";
+                return (
+                  <div key={item.id} className="p-4 rounded-xl bg-slate-900/50 border border-slate-800/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 card-print">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${bc}`}>{item.tier.replace(/_/g, " ")}</span>
+                        <span className="text-[11px] font-mono text-slate-500">{item.category}</span>
+                      </div>
+                      <h4 className="text-sm font-semibold text-white">{item.title}</h4>
+                      <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">{item.description}</p>
+                    </div>
+                    <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Impact: {item.impact}</span>
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800/60 text-slate-400">Effort: {item.effort}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {filteredPlan.length === 0 && (
+                <div className="text-xs text-slate-500 italic p-4 text-center">No action items found under this filter.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === "ai_visibility" && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-6">
@@ -123,7 +385,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                 <p className="text-xs text-slate-400">How understandable your business is to LLMs and generative search.</p>
               </div>
               <div className="text-right">
-                <span className="text-2xl font-bold text-indigo-400">{categories.aiVisibility.score}</span>
+                <span className="text-2xl font-bold text-indigo-400">{categories.aiVisibility?.score ?? 0}</span>
                 <span className="text-xs text-slate-500 font-mono">/100</span>
               </div>
             </div>
@@ -145,7 +407,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
             
             <p className="text-xs text-slate-300 leading-relaxed">{aiReadinessDetails.readinessAssessment}</p>
 
-            {categories.aiVisibility.findings && categories.aiVisibility.findings.length > 0 ? (
+            {categories.aiVisibility?.findings && categories.aiVisibility.findings.length > 0 ? (
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-indigo-300 border-b border-slate-800 pb-2">Intelligence Findings</h3>
                 <div className="grid grid-cols-1 gap-4">
@@ -200,28 +462,28 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
               trust: { title: "Trust & Reputation", data: categories.trustCredibility },
               conversion: { title: "Customer Conversion", data: categories.conversionReadiness },
             };
-            const cc = catMap[activeTab];
+            const cc = catMap[activeTab] || { title: "Category Intelligence", data: { explanation: "", score: 0, status: "insufficient", findings: [] } };
 
             return (
               <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
                   <div>
                     <h2 className="text-lg font-semibold text-white tracking-tight">{cc.title}</h2>
-                    <p className="text-xs text-slate-400">{cc.data.explanation}</p>
+                    <p className="text-xs text-slate-400">{cc.data?.explanation}</p>
                   </div>
                   <div className="text-right">
-                    {cc.data.status === "insufficient" ? (
+                    {cc.data?.status === "insufficient" ? (
                       <span className="text-sm font-bold text-slate-500">N/A</span>
                     ) : (
                       <>
-                        <span className="text-2xl font-bold text-white">{cc.data.score}</span>
+                        <span className="text-2xl font-bold text-white">{cc.data?.score ?? 0}</span>
                         <span className="text-xs text-slate-500 font-mono">/100</span>
                       </>
                     )}
                   </div>
                 </div>
 
-                {cc.data.findings && cc.data.findings.length > 0 && (
+                {cc.data?.findings && cc.data.findings.length > 0 ? (
                   <div className="space-y-4">
                     <h3 className="text-sm font-semibold text-indigo-300 border-b border-slate-800 pb-2">Intelligence Findings</h3>
                     <div className="grid grid-cols-1 gap-4">
@@ -267,48 +529,60 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                       ))}
                     </div>
                   </div>
-                )}
-
-                {!cc.data.findings || cc.data.findings.length === 0 ? (
+                ) : (
                   <div className="text-xs text-slate-500 italic">No significant intelligence findings available.</div>
-                ) : null}
+                )}
               </div>
             );
           })()}
         </div>
       )}
+
       {activeTab === "competitors" && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-5">
             <div>
               <h2 className="text-lg font-semibold text-white tracking-tight">Your Business vs. Industry Benchmarks</h2>
-              <p className="text-xs text-slate-400">Grounded comparison in the {industry} sector.</p>
+              <p className="text-xs text-slate-400">Grounded comparison in the {industry} sector based on verifiable public signals.</p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border border-slate-800 rounded-xl overflow-hidden">
-                <thead className="bg-slate-900 text-slate-400 font-mono uppercase tracking-wider border-b border-slate-800">
-                  <tr>
-                    <th className="p-3">Analysis Area</th>
-                    <th className="p-3">Your Status</th>
-                    <th className="p-3">Benchmark</th>
-                    <th className="p-3">Impact</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {(tier === "SNAPSHOT" ? competitorComparison?.slice(0, 1) :
-                    tier === "ESSENTIAL" ? competitorComparison?.slice(0, 2) :
-                    tier === "GROWTH" ? competitorComparison?.slice(0, 4) :
-                    competitorComparison)?.map((comp, i) => (
-                    <tr key={i} className="hover:bg-slate-900/40 transition-colors">
-                      <td className="p-3 font-medium text-white">{comp.area}</td>
-                      <td className="p-3 text-slate-300">{comp.yourStatus}</td>
-                      <td className="p-3 text-slate-400">{comp.competitorBenchmark}</td>
-                      <td className="p-3 font-mono text-indigo-400">{comp.impact}</td>
+            
+            {competitorComparison.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border border-slate-800 rounded-xl overflow-hidden">
+                  <thead className="bg-slate-900 text-slate-400 font-mono uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                      <th className="p-3">Analysis Area</th>
+                      <th className="p-3">Your Status</th>
+                      <th className="p-3">Benchmark</th>
+                      <th className="p-3">Impact</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {(tier === "SNAPSHOT" ? competitorComparison.slice(0, 1) :
+                      tier === "ESSENTIAL" ? competitorComparison.slice(0, 2) :
+                      tier === "GROWTH" ? competitorComparison.slice(0, 4) :
+                      competitorComparison).map((comp, i) => (
+                      <tr key={i} className="hover:bg-slate-900/40 transition-colors">
+                        <td className="p-3 font-medium text-white">{comp.area}</td>
+                        <td className="p-3 text-slate-300">{comp.yourStatus}</td>
+                        <td className="p-3 text-slate-400">{comp.competitorBenchmark}</td>
+                        <td className="p-3 font-mono text-indigo-400">{comp.impact}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-6 rounded-xl bg-slate-900/50 border border-slate-800 text-center space-y-2">
+                <HelpCircle className="w-6 h-6 text-slate-500 mx-auto" />
+                <p className="text-xs text-slate-400">
+                  {tier === "ESSENTIAL" 
+                    ? "Competitive benchmark intelligence is included with Growth and Authority tiers."
+                    : "Insufficient direct competitors identified from public evidence in this local market."}
+                </p>
+              </div>
+            )}
+
             {tier !== "AUTHORITY" && (
               <div className="pt-2">
                 <ContextualUpgradeBanner 
@@ -324,31 +598,58 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
           </div>
         </div>
       )}
-      {activeTab==="schema"&&(<div className="space-y-6"><div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-4"><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h2 className="text-lg font-semibold text-white tracking-tight">Instant JSON-LD Schema Snippet</h2><p className="text-xs text-slate-400">Custom-tailored structured entity markup for {businessName}.</p></div><button onClick={handleCopySchema} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors">{copiedSchema?<Check className="w-3.5 h-3.5"/>:<Copy className="w-3.5 h-3.5"/>}<span>{copiedSchema?"Copied!":"Copy Code"}</span></button></div><div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-indigo-200 overflow-x-auto"><pre>{generatedSchema.codeSnippet}</pre></div><p className="text-xs text-slate-400 leading-relaxed"><span className="text-white font-medium">Installation: </span>{generatedSchema.instructions}</p></div></div>)}
+
+      {activeTab === "schema" && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 card-print space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-white tracking-tight">Instant JSON-LD Schema Snippet</h2>
+                <p className="text-xs text-slate-400">Custom-tailored structured entity markup for {businessName}.</p>
+              </div>
+              <button 
+                onClick={handleCopySchema} 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors"
+              >
+                {copiedSchema ? <Check className="w-3.5 h-3.5"/> : <Copy className="w-3.5 h-3.5"/>}
+                <span>{copiedSchema ? "Copied!" : "Copy Code"}</span>
+              </button>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-indigo-200 overflow-x-auto">
+              <pre>{generatedSchema.codeSnippet}</pre>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              <span className="text-white font-medium">Installation: </span>{generatedSchema.instructions}
+            </p>
+          </div>
+        </div>
+      )}
+
       {activeTab === "customer_intent" && (
         <div className="space-y-6">
-          {customerIntentAnalysis && customerIntentAnalysis.length > 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
-                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
-                  <Target className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white tracking-tight">Customer Intent Analysis</h2>
-                  <p className="text-xs text-slate-400">What buyers ask AI vs. what your site currently answers.</p>
-                </div>
+          <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-5">
+            <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
+              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <Target className="w-4 h-4" />
               </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white tracking-tight">Customer Intent Analysis</h2>
+                <p className="text-xs text-slate-400">What prospective buyers ask AI engines vs. what your digital content currently answers.</p>
+              </div>
+            </div>
+
+            {customerIntentAnalysis.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border border-slate-800 rounded-xl overflow-hidden">
                   <thead className="bg-slate-900 text-slate-400 font-mono uppercase tracking-wider border-b border-slate-800">
                     <tr>
                       <th className="p-3">Buyer Question</th>
-                      <th className="p-3">Intent Type</th>
-                      <th className="p-3">Site Status</th>
+                      <th className="p-3">Intent Phase</th>
+                      <th className="p-3">Site Coverage</th>
                       <th className="p-3">Actionable Recommendation</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className="divide-y border-slate-800">
                     {(tier === "SNAPSHOT" ? customerIntentAnalysis.slice(0, 1) :
                       tier === "ESSENTIAL" ? customerIntentAnalysis.slice(0, 2) :
                       tier === "GROWTH" ? customerIntentAnalysis.slice(0, 4) :
@@ -371,38 +672,47 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                   </tbody>
                 </table>
               </div>
-              {tier !== "AUTHORITY" && (
-                <div className="pt-2">
-                  <ContextualUpgradeBanner 
-                    targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
-                    price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
-                    unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : tier === "GROWTH" ? 4 : customerIntentAnalysis.length}
-                    totalFound={customerIntentAnalysis.length}
-                    foundDescription="customer intent questions, answer coverage evaluations, and prioritization gaps"
-                    nextTierAdds={tier === "SNAPSHOT" ? "deeper intent questions and evidence" : tier === "ESSENTIAL" ? "expanded intent opportunities and prioritization" : "long-term intent-led authority strategy"}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-xs text-slate-500 italic">No intent data available.</div>
-          )}
+            ) : (
+              <div className="p-6 rounded-xl bg-slate-900/50 border border-slate-800 text-center space-y-2">
+                <HelpCircle className="w-6 h-6 text-slate-500 mx-auto" />
+                <p className="text-xs text-slate-400">
+                  {tier === "ESSENTIAL"
+                    ? "Customer intent mapping is available with Growth and Authority tiers."
+                    : "No modeled customer intent questions recorded for this business profile."}
+                </p>
+              </div>
+            )}
+
+            {tier !== "AUTHORITY" && (
+              <div className="pt-2">
+                <ContextualUpgradeBanner 
+                  targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
+                  price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
+                  unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : tier === "GROWTH" ? 4 : customerIntentAnalysis.length}
+                  totalFound={customerIntentAnalysis.length}
+                  foundDescription="customer intent questions, answer coverage evaluations, and prioritization gaps"
+                  nextTierAdds={tier === "SNAPSHOT" ? "deeper intent questions and evidence" : tier === "ESSENTIAL" ? "expanded intent opportunities and prioritization" : "long-term intent-led authority strategy"}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {activeTab === "thirty_day_plan" && (
         <div className="space-y-6">
-          {thirtyDayPlan && thirtyDayPlan.length > 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                  <Calendar className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white tracking-tight">Structured 30-Day Action Plan</h2>
-                  <p className="text-xs text-slate-400">Phased week-by-week execution roadmap with clear team ownership.</p>
-                </div>
+          <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-5">
+            <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                <Calendar className="w-4 h-4" />
               </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white tracking-tight">Structured 30-Day Action Plan</h2>
+                <p className="text-xs text-slate-400">Phased week-by-week execution roadmap with clear team ownership.</p>
+              </div>
+            </div>
+
+            {thirtyDayPlan.length > 0 ? (
               <div className="space-y-5">
                 {(tier === "SNAPSHOT" ? thirtyDayPlan.slice(0, 1) :
                   tier === "ESSENTIAL" ? thirtyDayPlan.slice(0, 2) :
@@ -441,38 +751,47 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                   </div>
                 ))}
               </div>
-              {tier !== "AUTHORITY" && (
-                <div className="pt-2">
-                  <ContextualUpgradeBanner 
-                    targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
-                    price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
-                    unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : thirtyDayPlan.length}
-                    totalFound={thirtyDayPlan.length}
-                    foundDescription="weeks of structured execution steps and phased optimization plans"
-                    nextTierAdds={tier === "SNAPSHOT" ? "week 2 optimization plan" : tier === "ESSENTIAL" ? "full 30-day growth execution plan" : "long-term strategic actionability"}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-xs text-slate-500 italic">No structured plan data available.</div>
-          )}
+            ) : (
+              <div className="p-6 rounded-xl bg-slate-900/50 border border-slate-800 text-center space-y-2">
+                <HelpCircle className="w-6 h-6 text-slate-500 mx-auto" />
+                <p className="text-xs text-slate-400">
+                  {tier === "ESSENTIAL"
+                    ? "The 30-day phased action plan is included in Growth and Authority tiers."
+                    : "No structured 30-day action plan generated for this audit."}
+                </p>
+              </div>
+            )}
+
+            {tier !== "AUTHORITY" && (
+              <div className="pt-2">
+                <ContextualUpgradeBanner 
+                  targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
+                  price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
+                  unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : thirtyDayPlan.length}
+                  totalFound={thirtyDayPlan.length}
+                  foundDescription="weeks of structured execution steps and phased optimization plans"
+                  nextTierAdds={tier === "SNAPSHOT" ? "week 2 optimization plan" : tier === "ESSENTIAL" ? "full 30-day growth execution plan" : "long-term strategic actionability"}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {activeTab === "query_coverage" && (
         <div className="space-y-6">
-          {queryCoverageAnalysis && queryCoverageAnalysis.length > 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-5">
-              <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
-                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
-                  <BarChart2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white tracking-tight">Generative Query Coverage Analysis</h2>
-                  <p className="text-xs text-slate-400">Simulated LLM query evaluations across 6 critical search intent categories.</p>
-                </div>
+          <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-5">
+            <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+                <BarChart2 className="w-4 h-4" />
               </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white tracking-tight">Generative Query Coverage Analysis</h2>
+                <p className="text-xs text-slate-400">Simulated LLM query evaluations across 6 critical search intent categories.</p>
+              </div>
+            </div>
+
+            {queryCoverageAnalysis.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {(tier === "SNAPSHOT" ? queryCoverageAnalysis.slice(0, 1) :
                   tier === "ESSENTIAL" ? queryCoverageAnalysis.slice(0, 2) :
@@ -502,112 +821,129 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
                   );
                 })}
               </div>
-              {tier !== "AUTHORITY" && (
-                <div className="pt-2">
-                  <ContextualUpgradeBanner 
-                    targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
-                    price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
-                    unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : tier === "GROWTH" ? 4 : queryCoverageAnalysis.length}
-                    totalFound={queryCoverageAnalysis.length}
-                    foundDescription="generative query intent evaluations and AI discovery gap analyses"
-                    nextTierAdds={tier === "SNAPSHOT" ? "core LLM query diagnostics" : tier === "ESSENTIAL" ? "expanded generative search evaluations" : "complete AI discovery query coverage"}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-xs text-slate-500 italic">No query coverage data available.</div>
-          )}
+            ) : (
+              <div className="p-6 rounded-xl bg-slate-900/50 border border-slate-800 text-center space-y-2">
+                <HelpCircle className="w-6 h-6 text-slate-500 mx-auto" />
+                <p className="text-xs text-slate-400">
+                  {tier === "AUTHORITY"
+                    ? "No query coverage data available."
+                    : "Generative Query Coverage is exclusive to the Authority intelligence tier ($50)."}
+                </p>
+              </div>
+            )}
+
+            {tier !== "AUTHORITY" && (
+              <div className="pt-2">
+                <ContextualUpgradeBanner 
+                  targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
+                  price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
+                  unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : tier === "GROWTH" ? 4 : queryCoverageAnalysis.length}
+                  totalFound={queryCoverageAnalysis.length}
+                  foundDescription="generative query intent evaluations and AI discovery gap analyses"
+                  nextTierAdds={tier === "SNAPSHOT" ? "core LLM query diagnostics" : tier === "ESSENTIAL" ? "expanded generative search evaluations" : "complete AI discovery query coverage"}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {activeTab === "strategic_roadmap" && (
         <div className="space-y-6">
-          {strategicRoadmap ? (
-            <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
-                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
-                  <Map className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white tracking-tight">Executive Strategic Roadmap</h2>
-                  <p className="text-xs text-slate-400">Quarterly directives for executive decision-makers and agency handoff.</p>
-                </div>
+          <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-6">
+            <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
+              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <Map className="w-4 h-4" />
               </div>
-              
-              <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-900/40 space-y-1.5">
-                <div className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">Executive Directive</div>
-                <p className="text-sm text-slate-200 leading-relaxed">{strategicRoadmap.executiveDirective}</p>
+              <div>
+                <h2 className="text-lg font-semibold text-white tracking-tight">Executive Strategic Roadmap</h2>
+                <p className="text-xs text-slate-400">Quarterly directives for executive decision-makers and agency handoff.</p>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1.5">
-                  <div className="text-xs font-bold text-emerald-400">Primary Strategic Advantage</div>
-                  <p className="text-xs text-slate-300">{strategicRoadmap.primaryStrategicAdvantage}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1.5">
-                  <div className="text-xs font-bold text-rose-400">Immediate Bottleneck</div>
-                  <p className="text-xs text-slate-300">{strategicRoadmap.immediateBottleneck}</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-white">Quarterly Milestones</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {(tier === "SNAPSHOT" ? strategicRoadmap.quarterlyMilestones?.slice(0, 1) :
-                    tier === "ESSENTIAL" ? strategicRoadmap.quarterlyMilestones?.slice(0, 2) :
-                    tier === "GROWTH" ? strategicRoadmap.quarterlyMilestones?.slice(0, 3) :
-                    strategicRoadmap.quarterlyMilestones)?.map((m, i) => (
-                    <div key={i} className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-bold text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
-                          {m.quarter}
-                        </span>
-                        <span className="text-[11px] font-mono text-slate-400">{m.kpiTarget}</span>
-                      </div>
-                      <p className="text-xs text-slate-200 font-medium">{m.focus}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {tier === "AUTHORITY" && strategicRoadmap.handoffGuideForTeam && strategicRoadmap.handoffGuideForTeam.length > 0 && (
-                <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-                  <div className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
-                    Team &amp; Agency Handoff Blueprint
-                  </div>
-                  <ul className="space-y-2">
-                    {strategicRoadmap.handoffGuideForTeam.map((guide, idx) => (
-                      <li key={idx} className="text-xs text-slate-300 flex items-start gap-2.5">
-                        <ArrowRight className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
-                        <span className="leading-relaxed">{guide}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {tier !== "AUTHORITY" && (
-                <div className="pt-2">
-                  <ContextualUpgradeBanner 
-                    targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
-                    price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
-                    unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : tier === "GROWTH" ? 3 : strategicRoadmap.quarterlyMilestones.length}
-                    totalFound={strategicRoadmap.quarterlyMilestones.length}
-                    foundDescription="quarterly strategic milestones and team handoff directives"
-                    nextTierAdds={tier === "SNAPSHOT" ? "Q2 milestones" : tier === "ESSENTIAL" ? "Q3 milestones" : "complete annual roadmap and agency handoff blueprint"}
-                  />
-                </div>
-              )}
             </div>
-          ) : (
-            <div className="text-xs text-slate-500 italic">No roadmap data available.</div>
-          )}
+            
+            {strategicRoadmap ? (
+              <div className="space-y-6">
+                <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-900/40 space-y-1.5">
+                  <div className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-400">Executive Directive</div>
+                  <p className="text-sm text-slate-200 leading-relaxed">{strategicRoadmap.executiveDirective}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1.5">
+                    <div className="text-xs font-bold text-emerald-400">Primary Strategic Advantage</div>
+                    <p className="text-xs text-slate-300">{strategicRoadmap.primaryStrategicAdvantage}</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-1.5">
+                    <div className="text-xs font-bold text-rose-400">Immediate Bottleneck</div>
+                    <p className="text-xs text-slate-300">{strategicRoadmap.immediateBottleneck}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-white">Quarterly Milestones</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {(tier === "SNAPSHOT" ? strategicRoadmap.quarterlyMilestones?.slice(0, 1) :
+                      tier === "ESSENTIAL" ? strategicRoadmap.quarterlyMilestones?.slice(0, 2) :
+                      tier === "GROWTH" ? strategicRoadmap.quarterlyMilestones?.slice(0, 3) :
+                      strategicRoadmap.quarterlyMilestones)?.map((m, i) => (
+                      <div key={i} className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-mono font-bold text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
+                            {m.quarter}
+                          </span>
+                          <span className="text-[11px] font-mono text-slate-400">{m.kpiTarget}</span>
+                        </div>
+                        <p className="text-xs text-slate-200 font-medium">{m.focus}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {tier === "AUTHORITY" && strategicRoadmap.handoffGuideForTeam && strategicRoadmap.handoffGuideForTeam.length > 0 && (
+                  <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+                    <div className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+                      Team &amp; Agency Handoff Blueprint
+                    </div>
+                    <ul className="space-y-2">
+                      {strategicRoadmap.handoffGuideForTeam.map((guide, idx) => (
+                        <li key={idx} className="text-xs text-slate-300 flex items-start gap-2.5">
+                          <ArrowRight className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+                          <span className="leading-relaxed">{guide}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-6 rounded-xl bg-slate-900/50 border border-slate-800 text-center space-y-2">
+                <HelpCircle className="w-6 h-6 text-slate-500 mx-auto" />
+                <p className="text-xs text-slate-400">
+                  {tier === "AUTHORITY"
+                    ? "No roadmap data available."
+                    : "The Strategic Roadmap and Agency Handoff Blueprint are exclusive to the Authority intelligence tier ($50)."}
+                </p>
+              </div>
+            )}
+
+            {tier !== "AUTHORITY" && (
+              <div className="pt-2">
+                <ContextualUpgradeBanner 
+                  targetTier={tier === "SNAPSHOT" ? "ESSENTIAL" : tier === "ESSENTIAL" ? "GROWTH" : "AUTHORITY"} 
+                  price={tier === "SNAPSHOT" ? tp.essential : tier === "ESSENTIAL" ? tp.growth - tp.essential : tp.authority - tp.growth} 
+                  unlockedCount={tier === "SNAPSHOT" ? 1 : tier === "ESSENTIAL" ? 2 : tier === "GROWTH" ? 3 : (strategicRoadmap?.quarterlyMilestones?.length || 0)}
+                  totalFound={strategicRoadmap?.quarterlyMilestones?.length || 4}
+                  foundDescription="quarterly strategic milestones and team handoff directives"
+                  nextTierAdds={tier === "SNAPSHOT" ? "Q2 milestones" : tier === "ESSENTIAL" ? "Q3 milestones" : "complete annual roadmap and agency handoff blueprint"}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
-      
-      {/* PHASE 3L: Render Dynamic Service Opportunities */}
-      {reportData.serviceOpportunities && reportData.serviceOpportunities.length > 0 && (
+
+      {/* Render Dynamic Service Opportunities if detected */}
+      {serviceOpportunities.length > 0 && (
         <div className="rounded-2xl border border-slate-800 bg-[#0c111d]/90 p-6 sm:p-8 space-y-5">
           <div className="flex items-center gap-3 border-b border-slate-800/80 pb-4">
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
@@ -619,7 +955,7 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {reportData.serviceOpportunities.map((so: any, i: number) => (
+            {serviceOpportunities.map((so: any, i: number) => (
               <div key={i} className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-bold text-indigo-400 px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
@@ -635,7 +971,77 @@ export default function FullReportView({ auditId,businessName,url,industry,locat
           </div>
         </div>
       )}
-      <div className="rounded-2xl border border-indigo-900/40 bg-[#0d1326] p-6 sm:p-8 no-print space-y-6 relative overflow-hidden"><div className="absolute top-0 right-0 w-72 h-72 bg-indigo-600/10 blur-[100px] pointer-events-none"/><div className="max-w-2xl space-y-2"><div className="text-xs font-mono uppercase tracking-wider text-indigo-400">Professional Implementation</div><h3 className="text-2xl font-bold text-white tracking-tight">Want Us To Fix It?</h3><p className="text-xs text-slate-300 leading-relaxed">Your report identified key visibility gaps. Our senior digital engineering team can implement the complete solution: schema architecture, AI visibility optimization, and conversion-rate tuning.</p></div>{leadSubmitted?(<div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0"/><span>Thank you! An expert strategist has received your audit and will review within 24 hours.</span></div>):(<form onSubmit={handleLeadSubmit} className="space-y-4 max-w-xl"><div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><input type="text" required placeholder="Your Name" value={leadForm.name} onChange={e=>setLeadForm({...leadForm,name:e.target.value})} className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"/><input type="email" required placeholder="Your Email" value={leadForm.email} onChange={e=>setLeadForm({...leadForm,email:e.target.value})} className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"/></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><input type="tel" placeholder="Phone (Optional)" value={leadForm.phone} onChange={e=>setLeadForm({...leadForm,phone:e.target.value})} className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"/><select value={leadForm.service} onChange={e=>setLeadForm({...leadForm,service:e.target.value})} className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-indigo-500"><option value="AI visibility optimization">AI Visibility Optimization</option><option value="Complete Website Redesign">Complete Website Redesign</option><option value="Content &amp; Topical Strategy">Content &amp; Topical Strategy</option><option value="Local Search &amp; Schema Setup">Local Search &amp; Schema Setup</option><option value="Full Digital Turnkey Growth">Full Digital Turnkey Growth</option></select></div><textarea rows={2} placeholder="Tell us about your immediate goals..." value={leadForm.message} onChange={e=>setLeadForm({...leadForm,message:e.target.value})} className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"/><button type="submit" disabled={leadLoading} className="py-2.5 px-5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all disabled:opacity-50"><Send className="w-3.5 h-3.5"/><span>{leadLoading?"Sending...":"Talk to an Expert"}</span></button></form>)}</div>
+
+      {/* Lead capture form */}
+      <div className="rounded-2xl border border-indigo-900/40 bg-[#0d1326] p-6 sm:p-8 no-print space-y-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-600/10 blur-[100px] pointer-events-none"/>
+        <div className="max-w-2xl space-y-2">
+          <div className="text-xs font-mono uppercase tracking-wider text-indigo-400">Professional Implementation</div>
+          <h3 className="text-2xl font-bold text-white tracking-tight">Want Us To Fix It?</h3>
+          <p className="text-xs text-slate-300 leading-relaxed">Your report identified key visibility gaps. Our senior digital engineering team can implement the complete solution: schema architecture, AI visibility optimization, and conversion-rate tuning.</p>
+        </div>
+        {leadSubmitted ? (
+          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0"/>
+            <span>Thank you! An expert strategist has received your audit and will review within 24 hours.</span>
+          </div>
+        ) : (
+          <form onSubmit={handleLeadSubmit} className="space-y-4 max-w-xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input 
+                type="text" 
+                required 
+                placeholder="Your Name" 
+                value={leadForm.name} 
+                onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })} 
+                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+              <input 
+                type="email" 
+                required 
+                placeholder="Your Email" 
+                value={leadForm.email} 
+                onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })} 
+                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input 
+                type="tel" 
+                placeholder="Phone (Optional)" 
+                value={leadForm.phone} 
+                onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })} 
+                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+              <select 
+                value={leadForm.service} 
+                onChange={(e) => setLeadForm({ ...leadForm, service: e.target.value })} 
+                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-indigo-500"
+              >
+                <option value="AI visibility optimization">AI Visibility Optimization</option>
+                <option value="Complete Website Redesign">Complete Website Redesign</option>
+                <option value="Content & Topical Strategy">Content & Topical Strategy</option>
+                <option value="Local Search & Schema Setup">Local Search & Schema Setup</option>
+                <option value="Full Digital Turnkey Growth">Full Digital Turnkey Growth</option>
+              </select>
+            </div>
+            <textarea 
+              rows={2} 
+              placeholder="Tell us about your immediate goals..." 
+              value={leadForm.message} 
+              onChange={(e) => setLeadForm({ ...leadForm, message: e.target.value })} 
+              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+            />
+            <button 
+              type="submit" 
+              disabled={leadLoading} 
+              className="py-2.5 px-5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all disabled:opacity-50"
+            >
+              <Send className="w-3.5 h-3.5"/><span>{leadLoading ? "Sending..." : "Talk to an Expert"}</span>
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

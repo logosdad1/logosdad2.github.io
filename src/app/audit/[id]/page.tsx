@@ -241,7 +241,7 @@ function AuditDetailContent() {
         <AIAmbientBackground intensity="minimal" />
       </div>
 
-      {audit.isPaid || isJustUnlocked ? (
+      {audit.isPaid ? (
         <FullReportView
           auditId={audit.id}
           businessName={audit.businessName}
