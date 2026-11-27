@@ -9,15 +9,16 @@ datasource db {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
-  passwordHash String
-  name         String
-  role         String     @default("USER") // USER or ADMIN
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  businesses   Business[]
-  audits       Audit[]
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String
+  name          String
+  role          String     @default("USER") // USER or ADMIN
+  emailVerified Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  businesses    Business[]
+  audits        Audit[]
 }
 
 model Business {
@@ -80,16 +81,20 @@ model AuditReportData {
 }
 
 model Payment {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
+  userId         String?
+  businessId     String?
   auditId        String
-  tier           String   @default("ESSENTIAL") // ESSENTIAL, GROWTH, AUTHORITY
+  tier           String    @default("ESSENTIAL") // ESSENTIAL, GROWTH, AUTHORITY
   amount         Float
-  currency       String   @default("USD")
-  status         String   // PENDING, SUCCEEDED, FAILED
-  provider       String   @default("stripe") // stripe, mock
+  currency       String    @default("USD")
+  status         String    // PENDING, PROCESSING, PAID, FAILED, CANCELLED, REFUNDED
+  provider       String    @default("paystack") // paystack, stripe, mock
   transactionRef String?
-  createdAt      DateTime @default(now())
-  audit          Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  paidAt         DateTime?
+  refundedAt     DateTime?
+  audit          Audit     @relation(fields: [auditId], references: [id], onDelete: Cascade)
 }
 
 model SystemConfig {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, signToken } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
+import { insforge } from "@/lib/insforge";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,50 +11,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const existing = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-    });
-
-    if (existing) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 400 });
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
-    // Determine role: if first user or admin email pattern, make admin
-    const totalUsers = await prisma.user.count();
-    const role = totalUsers === 0 || email.toLowerCase().includes("admin") ? "ADMIN" : "USER";
+    const cleanEmail = email.toLowerCase().trim();
 
+    // 1. Sign up user via InsForge Auth
+    const { data: insforgeData, error: insforgeError } = await insforge.auth.signUp({
+      email: cleanEmail,
+      password,
+      name,
+    });
+
+    if (insforgeError) {
+      // Check if user already exists
+      const msg = insforgeError.message || "";
+      if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("exist")) {
+        return NextResponse.json({ error: "Email is already registered. Please sign in." }, { status: 400 });
+      }
+      return NextResponse.json({ error: msg || "Registration failed via InsForge Auth" }, { status: 400 });
+    }
+
+    // 2. Synchronize / prepare User record in InsForge database
+    const totalUsers = await prisma.user.count();
+    const role = totalUsers === 0 || cleanEmail.includes("admin") ? "ADMIN" : "USER";
     const passwordHash = await hashPassword(password);
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase().trim(),
+
+    await prisma.user.upsert({
+      where: { email: cleanEmail },
+      update: {
+        name,
+        role,
+        passwordHash,
+      },
+      create: {
+        email: cleanEmail,
         name,
         passwordHash,
         role,
+        emailVerified: false,
       },
     });
 
-    const token = signToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-    });
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      requireEmailVerification: true,
+      email: cleanEmail,
+      message: "Registration successful! A 6-digit verification code has been sent to your email address.",
     });
-
-    response.cookies.set("ordigit_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-      path: "/",
-    });
-
-    return response;
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Register Error:", error);
+    return NextResponse.json({ error: error.message || "Internal registration error" }, { status: 500 });
   }
 }

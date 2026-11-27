@@ -12,9 +12,10 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await getCurrentUser();
+    let dbUser: any = null;
     if (user) {
       // Verify user actually exists in DB to prevent foreign key errors from stale cookies
-      const dbUser = await prisma.user.findUnique({ where: { id: user.userId } });
+      dbUser = await prisma.user.findUnique({ where: { id: user.userId } });
       
       if (dbUser) {
         // Find the audit first to see if it needs a business
@@ -63,7 +64,8 @@ export async function POST(req: NextRequest) {
     const { checkoutUrl, isMock, finalPrice, isUpgrade } = await createCheckoutSession(
       auditId,
       targetTier,
-      appUrl
+      appUrl,
+      dbUser ? { userId: dbUser.id, email: dbUser.email } : undefined
     );
 
     return NextResponse.json({ checkoutUrl, isMock, finalPrice, isUpgrade, tier: targetTier });

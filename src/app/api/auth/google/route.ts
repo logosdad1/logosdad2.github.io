@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
 
     const email = payload.email.toLowerCase().trim();
     const name = payload.name || "Google User";
+    const isEmailVerified = Boolean(payload.email_verified);
 
     let user = await prisma.user.findUnique({
       where: { email },
@@ -48,7 +49,13 @@ export async function POST(req: NextRequest) {
           name,
           passwordHash: dummyPasswordHash,
           role,
+          emailVerified: isEmailVerified,
         },
+      });
+    } else if (user.emailVerified !== isEmailVerified) {
+      user = await prisma.user.update({
+        where: { email },
+        data: { emailVerified: isEmailVerified },
       });
     }
 

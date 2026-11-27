@@ -1,47 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { paymentService } from "@/lib/payments/service";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const sessionId = searchParams.get("session_id");
+  const reference =
+    searchParams.get("reference") ||
+    searchParams.get("trxref") ||
+    searchParams.get("session_id");
 
-  if (!sessionId) {
-    return NextResponse.json({ error: "Missing session_id" }, { status: 400 });
+  if (!reference) {
+    return NextResponse.json({ error: "Missing transaction reference or session_id" }, { status: 400 });
   }
 
   try {
-    const payment = await prisma.payment.findFirst({
-      where: { transactionRef: sessionId },
-      include: { audit: true }
-    });
-
-    if (!payment) {
-      // Payment might still be pending webhook delivery
-      return NextResponse.json({ status: "PENDING" });
-    }
-
-    if (payment.status === "FAILED") {
-      return NextResponse.json({ status: "FAILED" });
-    }
-
-    // Since our webhook currently doesn't run a background job (no BullMQ installed),
-    // it just marks the audit as PROCESSING. We'll automatically mock a completion after 
-    // it reaches PROCESSING to simulate the asynchronous report generation.
-    if (payment.audit.status === "PROCESSING") {
-      // Auto-complete it for demo purposes. In production, a background worker would do this.
-      await prisma.audit.update({
-        where: { id: payment.auditId },
-        data: { status: "COMPLETED" }
-      });
-      return NextResponse.json({ status: "COMPLETED", auditId: payment.auditId, tier: payment.tier });
-    }
-
-    if (payment.audit.status === "COMPLETED") {
-      return NextResponse.json({ status: "COMPLETED", auditId: payment.auditId, tier: payment.tier });
-    }
-
-    return NextResponse.json({ status: payment.audit.status });
+    const result = await paymentService.verifyPaymentStatus(reference);
+    return NextResponse.json(result);
   } catch (error: any) {
+    console.error("Payment status verification error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

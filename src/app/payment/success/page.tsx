@@ -8,13 +8,16 @@ import { Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+  const reference =
+    searchParams.get("reference") ||
+    searchParams.get("trxref") ||
+    searchParams.get("session_id");
 
   const [status, setStatus] = useState<"loading" | "processing" | "completed" | "error">("loading");
   const [auditId, setAuditId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!reference) {
       setStatus("error");
       return;
     }
@@ -24,7 +27,7 @@ function SuccessContent() {
     
     const checkStatus = async () => {
       try {
-        const res = await fetch(`/api/checkout/status?session_id=${sessionId}`);
+        const res = await fetch(`/api/checkout/status?reference=${encodeURIComponent(reference)}`);
         if (!res.ok) throw new Error("Payment status check failed");
         
         const data = await res.json();
@@ -51,7 +54,7 @@ function SuccessContent() {
     interval = setInterval(checkStatus, 3000); // Poll every 3 seconds
 
     return () => clearInterval(interval);
-  }, [sessionId]);
+  }, [reference]);
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
